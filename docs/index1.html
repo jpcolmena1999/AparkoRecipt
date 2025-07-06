@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Recibo de Parqueadero - Aparko</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      font-size: 14px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .placa-grande {
+      font-size: 32px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .barcode {
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+  <script>
+    function getParams() {
+      const params = {};
+      location.search.slice(1).split("&").forEach(p => {
+        const [k, v] = p.split("=");
+        params[decodeURIComponent(k)] = decodeURIComponent(v || "");
+      });
+      return params;
+    }
+
+    function fillData() {
+      const p = getParams();
+      document.getElementById("fecha").textContent = p.fecha || "";
+      document.getElementById("placa").textContent = p.EntradaPlaca || "";
+      document.getElementById("categoria").textContent = p.TipoPlaca || "";
+      document.getElementById("empresa").textContent = p.DatosEmpresa || "";
+      document.getElementById("nit").textContent = p.DatosNit || "";
+      document.getElementById("direccion").textContent = p.DatosDireccion || "";
+      document.getElementById("horario").textContent = p.DatosHorario || "";
+      document.getElementById("reglamento").textContent = p.VirtualReglamento || "";
+      document.getElementById("poliza").textContent = p.DatosPoliza || "";
+
+      // Mostrar la placa como código de barras
+      JsBarcode("#barcode", p.EntradaPlaca || "", {
+        format: "CODE128",
+        displayValue: true,
+        fontSize: 14,
+        height: 40
+      });
+    }
+
+    window.onload = function () {
+      fillData();
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => window.close(), 1000);
+      }, 800);
+    };
+  </script>
+</head>
+<body>
+  <h1 id="empresa">APARKO</h1>
+  <p><strong>NIT:</strong> <span id="nit"></span></p>
+  <p><strong>Dirección:</strong> <span id="direccion"></span></p>
+  <p><strong>Horario:</strong> <span id="horario"></span></p>
+  <hr>
+  <p><strong>Fecha Entrada:</strong> <span id="fecha"></span></p>
+  <p><strong>Tipo de vehículo:</strong> <span id="categoria"></span></p>
+
+  <!-- PLACA en grande -->
+  <div class="placa-grande" id="placa"></div>
+
+  <!-- CÓDIGO DE BARRAS -->
+  <div class="barcode">
+    <svg id="barcode"></svg>
+  </div>
+
+  <hr>
+  <p><strong>Reglamento:</strong></p>
+  <p id="reglamento"></p>
+  <hr>
+  <p><strong>Póliza:</strong> <span id="poliza"></span></p>
+</body>
+</html>
