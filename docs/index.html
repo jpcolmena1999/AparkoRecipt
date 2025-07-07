@@ -31,7 +31,8 @@
 
     .barcode {
       text-align: center;
-      margin-top: 15px;
+      margin-top: 25px;
+      margin-bottom: 10px;
     }
 
     hr {
@@ -75,11 +76,13 @@
     document.getElementById("reglamento").innerText = decodeURIComponent(params.get("VirtualReglamento") || "");
     document.getElementById("poliza").innerText = decodeURIComponent(params.get("DatosPoliza") || "");
 
-    const placa = params.get("EntradaPlaca") || "Sin placa";
+    const placa = decodeURIComponent(params.get("EntradaPlaca") || "SIN PLACA");
     JsBarcode("#barcode", placa, {
       format: "CODE128",
       displayValue: true,
-      fontSize: 14
+      fontSize: 28,
+      fontOptions: "bold",
+      height: 40
     });
 
     window.onload = () => {
