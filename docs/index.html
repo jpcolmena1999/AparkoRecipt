@@ -5,24 +5,57 @@
   <title>Recibo de Parqueadero - Aparko</title>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <style>
+    @media print {
+      body {
+        width: 80mm;
+      }
+    }
+
     body {
+      width: 80mm;
+      margin: 0 auto;
       font-family: Arial, sans-serif;
-      padding: 20px;
-      font-size: 14px;
+      padding: 10px;
+      font-size: 13px;
     }
+
     h1 {
-      text-align: center;
+      margin: 0;
       margin-bottom: 10px;
+      font-size: 16px;
+      font-weight: bold;
     }
+
+    p {
+      margin: 2px 0;
+    }
+
+    .info {
+      margin-bottom: 8px;
+    }
+
     .placa-grande {
-      font-size: 32px;
+      font-size: 28px;
       font-weight: bold;
       text-align: center;
-      margin-top: 20px;
+      margin-top: 10px;
     }
+
     .barcode {
       text-align: center;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+
+    .separador {
+      border-top: 1px solid #000;
+      margin: 8px 0;
+    }
+
+    .titulo-bloque {
+      font-weight: bold;
       margin-top: 10px;
+      margin-bottom: 4px;
     }
   </style>
   <script>
@@ -37,21 +70,21 @@
 
     function fillData() {
       const p = getParams();
-      document.getElementById("fecha").textContent = p.fecha || "";
-      document.getElementById("placa").textContent = p.EntradaPlaca || "";
-      document.getElementById("categoria").textContent = p.TipoPlaca || "";
-      document.getElementById("empresa").textContent = p.DatosEmpresa || "";
+
+      document.getElementById("empresa").textContent = p["Ve.Name"] || "APARKO";
       document.getElementById("nit").textContent = p.DatosNit || "";
       document.getElementById("direccion").textContent = p.DatosDireccion || "";
       document.getElementById("horario").textContent = p.DatosHorario || "";
+      document.getElementById("fecha").textContent = p.fecha || "";
+      document.getElementById("categoria").textContent = p.TipoPlaca || "";
+      document.getElementById("placa").textContent = p.EntradaPlaca || "";
       document.getElementById("reglamento").textContent = p.VirtualReglamento || "";
       document.getElementById("poliza").textContent = p.DatosPoliza || "";
 
-      // Mostrar la placa como código de barras
       JsBarcode("#barcode", p.EntradaPlaca || "", {
         format: "CODE128",
         displayValue: true,
-        fontSize: 14,
+        fontSize: 12,
         height: 40
       });
     }
@@ -66,27 +99,30 @@
   </script>
 </head>
 <body>
-  <h1 id="empresa">APARKO</h1>
-  <p><strong>NIT:</strong> <span id="nit"></span></p>
-  <p><strong>Dirección:</strong> <span id="direccion"></span></p>
-  <p><strong>Horario:</strong> <span id="horario"></span></p>
-  <hr>
-  <p><strong>Fecha Entrada:</strong> <span id="fecha"></span></p>
-  <p><strong>Tipo de vehículo:</strong> <span id="categoria"></span></p>
+  <h1 id="empresa"></h1>
 
-  <!-- PLACA en grande -->
+  <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
+  <p class="info" id="direccion"></p>
+  <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
+
+  <div class="separador"></div>
+
+  <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
+  <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
+  <p><strong>PLACA</strong></p>
   <div class="placa-grande" id="placa"></div>
 
-  <!-- CÓDIGO DE BARRAS -->
   <div class="barcode">
     <svg id="barcode"></svg>
   </div>
 
-  <hr>
-  <p><strong>Reglamento:</strong></p>
+  <div class="separador"></div>
+
+  <p class="titulo-bloque">REGLAMENTO:</p>
   <p id="reglamento"></p>
-  <hr>
-  <p><strong>Póliza:</strong> <span id="poliza"></span></p>
+
+  <div class="separador"></div>
+
+  <p><strong>PÓLIZA:</strong> <span id="poliza"></span></p>
 </body>
 </html>
-
