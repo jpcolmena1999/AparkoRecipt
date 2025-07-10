@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Recibo de Salida - Aparko</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <style>
+    @media print {
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
+      body {
+        margin: 0;
+      }
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      padding: 0;
+      margin: 0;
+      width: 80mm;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 12px 0 4px;
+    }
+
+    .sub {
+      margin: 0 0 8px;
+    }
+
+    .dato-label {
+      font-weight: bold;
+    }
+
+    .trackid, .placa {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .barcode {
+      margin: 10px auto;
+    }
+
+    .pago {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+  </style>
+  <script>
+    function getParams() {
+      const params = {};
+      location.search.slice(1).split("&").forEach(p => {
+        const [k, v] = p.split("=");
+        params[decodeURIComponent(k)] = decodeURIComponent(v || "");
+      });
+      return params;
+    }
+
+    function formatPesos(valor) {
+      return "$" + Number(valor).toLocaleString("es-CO");
+    }
+
+    function fillData() {
+      const p = getParams();
+      document.getElementById("empresa").textContent = p.DatosEmpresa || "";
+      document.getElementById("nit").textContent = p.DatosNit || "";
+      document.getElementById("direccion").textContent = p.DatosDireccion || "";
+      document.getElementById("mensaje").textContent = p.VirtualValidaIVA || "";
+      document.getElementById("horario").textContent = p.DatosHorario || "";
+      document.getElementById("trackid").textContent = p.VirtualVerificaPos || "";
+      document.getElementById("placa").textContent = p.EntradaID || "";
+      document.getElementById("fechaEntrada").textContent = p.EntradaFecha || "";
+      document.getElementById("fechaSalida").textContent = p.SalidaFecha || "";
+      document.getElementById("duracion").textContent = p.SalidaDuracion || "";
+      document.getElementById("poliza").textContent = p.DatosPoliza || "";
+
+      document.getElementById("valor").textContent = formatPesos(p.SalidaValor || 0);
+
+      JsBarcode("#barcode", p.VirtualVerificaPos || "", {
+        format: "CODE128",
+        displayValue: false,
+        height: 40,
+      });
+    }
+
+    window.onload = function () {
+      fillData();
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => window.close(), 800);
+      }, 600);
+    };
+  </script>
+</head>
+<body>
+  <h1 id="empresa">APARKO</h1>
+  <p class="sub"><strong>NIT:</strong> <span id="nit"></span></p>
+  <p class="sub" id="direccion"></p>
+  <p class="sub" id="mensaje"></p>
+  <p class="sub"><strong>HORARIO:</strong> <span id="horario"></span></p>
+  <div>▼ ▼ ▼ ▼</div>
+  <p class="trackid">TRACK ID: <span id="trackid"></span></p>
+  <p class="placa">PLACA<br><span id="placa"></span></p>
+
+  <p><strong>Ingreso:</strong> <span id="fechaEntrada"></span></p>
+  <p><strong>Salida:</strong> <span id="fechaSalida"></span></p>
+  <p><strong>Duración:</strong> <span id="duracion"></span></p>
+
+  <p class="pago">TOTAL PAGO: <span id="valor"></span></p>
+
+  <svg id="barcode" class="barcode"></svg>
+
+  <p style="font-size:11px; margin-top:15px;"><strong>Poliza:</strong> <span id="poliza"></span></p>
+</body>
+</html>
