@@ -2,90 +2,96 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Recibo de Salida - Aparko</title>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <title>Recibo Salida</title>
   <style>
-    @media print {
-      @page {
-        size: 80mm auto;
-        margin: 0;
-      }
-      body {
-        margin: 0;
-      }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-
     body {
       font-family: Arial, sans-serif;
-      font-size: 13px;
-      padding: 0;
-      margin: 0;
+      font-size: 12px;
       width: 80mm;
-      text-align: center;
+      padding: 5px;
     }
-
     h1 {
-      font-size: 18px;
-      margin: 12px 0 4px;
+      text-align: center;
+      font-size: 16px;
+      margin-bottom: 5px;
     }
-
-    .sub {
-      margin: 0 0 8px;
+    .sub, .trackid, .pago {
+      text-align: center;
+      margin: 5px 0;
     }
-
-    .dato-label {
-      font-weight: bold;
+    .barcode {
+      display: block;
+      margin: 10px auto;
+      width: 180px;
+      height: 60px;
     }
-
-    .trackid, .placa {
+    .pago {
       font-size: 15px;
       font-weight: bold;
+      margin-top: 10px;
     }
-
-    .barcode {
-      margin: 10px auto;
+    p {
+      margin: 2px 0;
     }
-
-    .pago {
-      font-size: 18px;
-      font-weight: bold;
-      margin-top: 15px;
+    #reglamento {
+      font-size: 10px;
+      text-align: center;
+      margin-top: 20px;
     }
   </style>
+</head>
+<body>
+  <h1 id="empresa">LA RAMPLLA</h1>
+  <p class="sub"><strong>NIT:</strong> <span id="nit"></span></p>
+  <p class="sub" id="direccion"></p>
+  <p class="sub" id="mensaje"></p>
+  <p class="sub"><strong>HORARIO:</strong> <span id="horario"></span></p>
+  <div style="text-align:center;">▼▼▼▼</div>
+  <p class="trackid">TRACK ID: <span id="trackid"></span></p>
+  <p style="text-align:center;">PLACA<br><span id="placa" style="font-weight:bold;"></span></p>
+  <p><strong>Ingreso:</strong> <span id="fechaEntrada"></span></p>
+  <p><strong>Salida:</strong> <span id="fechaSalida"></span></p>
+  <p><strong>Duración:</strong> <span id="duracion"></span></p>
+  <p class="pago">TOTAL PAGO: <span id="valor"></span></p>
+  <svg id="barcode" class="barcode"></svg>
+  <p id="reglamento"></p>
+
+  <script src="https://cdn.jsdelivr.net/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
   <script>
-    function getParams() {
-      const params = {};
-      location.search.slice(1).split("&").forEach(p => {
-        const [k, v] = p.split("=");
-        params[decodeURIComponent(k)] = decodeURIComponent(v || "");
-      });
-      return params;
+    function getUrlParam(param) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(param) || '';
     }
 
-    function formatPesos(valor) {
-      return "$" + Number(valor).toLocaleString("es-CO");
+    function numberWithThousands(n) {
+      return "$" + Number(n).toLocaleString("es-CO");
     }
 
     function fillData() {
-      const p = getParams();
-      document.getElementById("empresa").textContent = p.DatosEmpresa || "";
-      document.getElementById("nit").textContent = p.DatosNit || "";
-      document.getElementById("direccion").textContent = p.DatosDireccion || "";
-      document.getElementById("mensaje").textContent = p.VirtualValidaIVA || "";
-      document.getElementById("horario").textContent = p.DatosHorario || "";
-      document.getElementById("trackid").textContent = p.VirtualVerificaPos || "";
-      document.getElementById("placa").textContent = p.EntradaID || "";
-      document.getElementById("fechaEntrada").textContent = p.EntradaFecha || "";
-      document.getElementById("fechaSalida").textContent = p.SalidaFecha || "";
-      document.getElementById("duracion").textContent = p.SalidaDuracion || "";
-      document.getElementById("poliza").textContent = p.DatosPoliza || "";
+      document.getElementById("empresa").textContent = getUrlParam("empresa");
+      document.getElementById("nit").textContent = getUrlParam("nit");
+      document.getElementById("direccion").textContent = getUrlParam("direccion");
+      document.getElementById("mensaje").textContent = getUrlParam("mensaje");
+      document.getElementById("horario").textContent = getUrlParam("horario");
+      document.getElementById("trackid").textContent = getUrlParam("trackid");
+      document.getElementById("placa").textContent = getUrlParam("placa");
+      document.getElementById("fechaEntrada").textContent = getUrlParam("fechaEntrada");
+      document.getElementById("fechaSalida").textContent = getUrlParam("fechaSalida");
+      document.getElementById("duracion").textContent = getUrlParam("duracion");
+      document.getElementById("valor").textContent = numberWithThousands(getUrlParam("valor"));
+      document.getElementById("reglamento").textContent = getUrlParam("reglamento");
 
-      document.getElementById("valor").textContent = formatPesos(p.SalidaValor || 0);
-
-      JsBarcode("#barcode", p.VirtualVerificaPos || "", {
+      JsBarcode("#barcode", getUrlParam("trackid"), {
         format: "CODE128",
         displayValue: false,
-        height: 40,
+        width: 2,
+        height: 50,
+        margin: 0
       });
     }
 
@@ -93,29 +99,9 @@
       fillData();
       setTimeout(() => {
         window.print();
-        setTimeout(() => window.close(), 800);
+        setTimeout(() => window.close(), 600);
       }, 600);
     };
   </script>
-</head>
-<body>
-  <h1 id="empresa">APARKO</h1>
-  <p class="sub"><strong>NIT:</strong> <span id="nit"></span></p>
-  <p class="sub" id="direccion"></p>
-  <p class="sub" id="mensaje"></p>
-  <p class="sub"><strong>HORARIO:</strong> <span id="horario"></span></p>
-  <div>▼ ▼ ▼ ▼</div>
-  <p class="trackid">TRACK ID: <span id="trackid"></span></p>
-  <p class="placa">PLACA<br><span id="placa"></span></p>
-
-  <p><strong>Ingreso:</strong> <span id="fechaEntrada"></span></p>
-  <p><strong>Salida:</strong> <span id="fechaSalida"></span></p>
-  <p><strong>Duración:</strong> <span id="duracion"></span></p>
-
-  <p class="pago">TOTAL PAGO: <span id="valor"></span></p>
-
-  <svg id="barcode" class="barcode"></svg>
-
-  <p style="font-size:11px; margin-top:15px;"><strong>Poliza:</strong> <span id="poliza"></span></p>
 </body>
 </html>
