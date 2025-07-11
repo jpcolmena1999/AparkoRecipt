@@ -29,9 +29,10 @@
     .bold {
       font-weight: bold;
     }
-    .barcode {
-      display: block;
-      margin: 10px auto 5px auto;
+    .qr {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0 5px 0;
     }
     .trackid {
       text-align: center;
@@ -87,14 +88,16 @@
   <p><strong>SALIDA:</strong> <span id="fechaSalida"></span></p>
   <p><strong>DURACIÓN:</strong> <span id="duracion"></span></p>
 
-  <svg id="barcode" class="barcode"></svg>
+  <div id="qrcode" class="qr"></div>
   <p class="trackid">TRACK ID: <span id="trackid"></span></p>
 
   <hr>
   <p class="footer-label">TOTAL A PAGAR:</p>
   <p class="footer">$<span id="valor"></span></p>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- QRCode library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
   <script>
     function getParam(key) {
       const url = new URLSearchParams(window.location.search);
@@ -121,12 +124,13 @@
       const valor = getParam("SalidaValor");
       document.getElementById("valor").innerText = formatNumber(valor);
 
-      JsBarcode("#barcode", getParam("VirtualVerificaPos"), {
-        format: "CODE128",
-        displayValue: false,
-        width: 2,
-        height: 40,
-        margin: 0
+      new QRCode(document.getElementById("qrcode"), {
+        text: getParam("VirtualVerificaPos"),
+        width: 80,
+        height: 80,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
       });
     }
 
@@ -140,3 +144,4 @@
   </script>
 </body>
 </html>
+
