@@ -76,7 +76,7 @@
     function fillData() {
       const params = new URLSearchParams(window.location.search);
       const get = (key) => decodeURIComponent(params.get(key) || '');
-      
+
       document.getElementById('empresa').textContent = get('empresa');
       document.getElementById('nit').textContent = get('nit');
       document.getElementById('direccion').textContent = get('direccion');
@@ -88,7 +88,7 @@
       document.getElementById('fechaSalida').textContent = get('fechaSalida');
       document.getElementById('duracion').textContent = get('duracion');
       document.getElementById('placa').textContent = get('placa');
-      
+
       const valor = parseInt(get('valor')) || 0;
       document.getElementById('valor').textContent = `$${valor.toLocaleString('es-CO')}`;
 
@@ -111,7 +111,7 @@
   </script>
 </head>
 <body>
-  <h1 id="empresa">Parking</h1>
+  <h1 id="empresa">EMPRESA</h1>
   <p><strong>NIT:</strong> <span id="nit"></span></p>
   <p class="sub" id="direccion"></p>
   <p class="sub"><strong>Horario:</strong> <span id="horario"></span></p>
@@ -125,6 +125,6 @@
   <svg id="barcode" class="barcode"></svg>
   <p class="trackid">TRACK ID: <span id="trackid"></span></p>
   <p class="footer-label">TOTAL A PAGAR</p>
-  <p class="footer" id="valor"></p>
+  <p class="footer" id="valor">$0</p>
 </body>
 </html>
