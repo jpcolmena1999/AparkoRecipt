@@ -11,43 +11,48 @@
     }
     body {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 12px;
+      font-size: 13px;
       width: 80mm;
       padding: 5px;
     }
     h1 {
-      font-size: 16px;
+      font-size: 17px;
       text-align: center;
       margin-bottom: 5px;
     }
     p {
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
     .sub {
-      font-size: 11px;
+      font-size: 12px;
     }
     .bold {
       font-weight: bold;
     }
     .barcode {
       display: block;
-      margin: 10px auto 3px auto;
+      margin: 10px auto 5px auto;
     }
     .trackid {
       text-align: center;
       font-size: 12px;
-      margin-bottom: 8px;
+      margin-bottom: 5px;
     }
     .mensaje-legal {
-      font-size: 10px;
+      font-size: 11px;
       text-align: center;
-      margin: 5px 0;
+      margin: 6px 0;
     }
     .footer {
       margin-top: 10px;
       text-align: center;
-      font-size: 11px;
+      font-size: 16px;
       font-weight: bold;
+    }
+    hr {
+      border: none;
+      border-top: 1px dashed #000;
+      margin: 10px 0;
     }
   </style>
 </head>
@@ -56,7 +61,7 @@
   <p class="sub"><strong>NIT:</strong> <span id="nit"></span></p>
   <p class="sub" id="direccion"></p>
   <p class="sub"><strong>Horario:</strong> <span id="horario"></span></p>
-  <hr style="margin: 5px 0;">
+  <hr>
   <p class="sub mensaje-legal" id="mensaje"></p>
 
   <p><strong>PLACA:</strong> <span id="placa"></span></p>
@@ -67,6 +72,7 @@
   <svg id="barcode" class="barcode"></svg>
   <p class="trackid">TRACK ID: <span id="trackid"></span></p>
 
+  <hr>
   <p class="footer">$<span id="valor"></span></p>
 
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -74,6 +80,10 @@
     function getParam(key) {
       const url = new URLSearchParams(window.location.search);
       return url.get(key) || '';
+    }
+
+    function formatNumber(num) {
+      return parseFloat(num).toLocaleString('es-CO');
     }
 
     function fillData() {
@@ -87,7 +97,9 @@
       document.getElementById("fechaSalida").innerText = getParam("SalidaFecha");
       document.getElementById("duracion").innerText = getParam("SalidaDuracion");
       document.getElementById("trackid").innerText = getParam("VirtualVerificaPos");
-      document.getElementById("valor").innerText = getParam("SalidaValor");
+
+      const valor = getParam("SalidaValor");
+      document.getElementById("valor").innerText = formatNumber(valor);
 
       JsBarcode("#barcode", getParam("VirtualVerificaPos"), {
         format: "CODE128",
@@ -108,5 +120,4 @@
   </script>
 </body>
 </html>
-
 
