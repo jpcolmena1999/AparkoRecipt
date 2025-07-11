@@ -65,6 +65,11 @@
       border-top: 1px dashed #000;
       margin: 10px 0;
     }
+    .poliza {
+      font-size: 11px;
+      text-align: center;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
@@ -86,6 +91,8 @@
   <hr>
   <p class="footer-label">TOTAL A PAGAR:</p>
   <p class="footer">$<span id="valor"></span></p>
+
+  <p class="poliza" id="poliza"></p>
 
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script>
@@ -112,6 +119,9 @@
 
       const valor = getParam("SalidaValor");
       document.getElementById("valor").innerText = formatNumber(valor);
+
+      const poliza = getParam("DatosPoliza");
+      document.getElementById("poliza").innerText = poliza;
 
       JsBarcode("#barcode", getParam("VirtualVerificaPos"), {
         format: "CODE128",
