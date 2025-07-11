@@ -2,79 +2,99 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Recibo de Salida - Aparko</title>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <title>Recibo de Salida</title>
   <style>
-    @media print {
-      body {
-        margin: 0;
-      }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     body {
-      font-family: Arial, sans-serif;
-      padding: 5px;
+      font-family: 'Courier New', Courier, monospace;
       font-size: 12px;
       width: 80mm;
+      padding: 5px;
     }
     h1 {
-      text-align: center;
-      margin: 5px 0;
       font-size: 16px;
+      text-align: center;
+      margin-bottom: 5px;
     }
-    .info {
-      margin: 5px 0;
+    p {
+      margin-bottom: 3px;
+    }
+    .sub {
+      font-size: 11px;
+    }
+    .bold {
+      font-weight: bold;
     }
     .barcode {
-      text-align: center;
-      margin: 10px 0;
+      display: block;
+      margin: 10px auto 3px auto;
     }
-    .valor {
-      font-weight: bold;
-      font-size: 18px;
+    .trackid {
       text-align: center;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .mensaje-legal {
+      font-size: 10px;
+      text-align: center;
+      margin: 5px 0;
+    }
+    .footer {
       margin-top: 10px;
-    }
-    hr {
-      border: none;
-      border-top: 1px dashed #000;
-      margin: 10px 0;
+      text-align: center;
+      font-size: 11px;
+      font-weight: bold;
     }
   </style>
-  <script>
-    function formatCurrency(valor) {
-      valor = parseFloat(valor);
-      if (isNaN(valor)) return "$0";
-      return "$" + valor.toLocaleString("es-CO");
-    }
+</head>
+<body>
+  <h1 id="empresa"></h1>
+  <p class="sub"><strong>NIT:</strong> <span id="nit"></span></p>
+  <p class="sub" id="direccion"></p>
+  <p class="sub"><strong>Horario:</strong> <span id="horario"></span></p>
+  <hr style="margin: 5px 0;">
+  <p class="sub mensaje-legal" id="mensaje"></p>
 
-    function getParams() {
-      const params = {};
-      location.search.slice(1).split("&").forEach(p => {
-        const [k, v] = p.split("=");
-        params[decodeURIComponent(k)] = decodeURIComponent(v || "");
-      });
-      return params;
+  <p><strong>PLACA:</strong> <span id="placa"></span></p>
+  <p><strong>ENTRADA:</strong> <span id="fechaEntrada"></span></p>
+  <p><strong>SALIDA:</strong> <span id="fechaSalida"></span></p>
+  <p><strong>DURACIÓN:</strong> <span id="duracion"></span></p>
+
+  <svg id="barcode" class="barcode"></svg>
+  <p class="trackid">TRACK ID: <span id="trackid"></span></p>
+
+  <p class="footer">$<span id="valor"></span></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script>
+    function getParam(key) {
+      const url = new URLSearchParams(window.location.search);
+      return url.get(key) || '';
     }
 
     function fillData() {
-      const p = getParams();
-      document.getElementById("empresa").textContent = p.DatosEmpresa || "";
-      document.getElementById("nit").textContent = p.DatosNit || "";
-      document.getElementById("direccion").textContent = p.DatosDireccion || "";
-      document.getElementById("horario").textContent = p.DatosHorario || "";
-      document.getElementById("placa").textContent = p.EntradaID || "";
-      document.getElementById("entrada").textContent = p.EntradaFecha || "";
-      document.getElementById("salida").textContent = p.SalidaFecha || "";
-      document.getElementById("duracion").textContent = p.SalidaDuracion || "";
-      document.getElementById("valor").textContent = formatCurrency(p.SalidaValor);
-      document.getElementById("mensaje-legal").textContent = p.MensajeLegal || "";
+      document.getElementById("empresa").innerText = getParam("NombreRampla");
+      document.getElementById("nit").innerText = getParam("DatosNit");
+      document.getElementById("direccion").innerText = getParam("DatosDireccion");
+      document.getElementById("horario").innerText = getParam("DatosHorario");
+      document.getElementById("mensaje").innerText = getParam("MensajeLegal");
+      document.getElementById("placa").innerText = getParam("EntradaID");
+      document.getElementById("fechaEntrada").innerText = getParam("EntradaFecha");
+      document.getElementById("fechaSalida").innerText = getParam("SalidaFecha");
+      document.getElementById("duracion").innerText = getParam("SalidaDuracion");
+      document.getElementById("trackid").innerText = getParam("VirtualVerificaPos");
+      document.getElementById("valor").innerText = getParam("SalidaValor");
 
-      // Generar código de barras con Track ID
-      JsBarcode("#barcode", p.VirtualVerificaPos || "", {
+      JsBarcode("#barcode", getParam("VirtualVerificaPos"), {
         format: "CODE128",
-        displayValue: true,
-        fontSize: 14,
-        height: 40
+        displayValue: false,
+        width: 2,
+        height: 40,
+        margin: 0
       });
     }
 
@@ -82,27 +102,11 @@
       fillData();
       setTimeout(() => {
         window.print();
-        setTimeout(() => window.close(), 1000);
-      }, 800);
+        setTimeout(() => window.close(), 600);
+      }, 300);
     };
   </script>
-</head>
-<body>
-  <h1 id="empresa">APARKO</h1>
-  <div class="info"><strong>NIT:</strong> <span id="nit"></span></div>
-  <div class="info"><strong>Dirección:</strong> <span id="direccion"></span></div>
-  <div class="info"><strong>Horario:</strong> <span id="horario"></span></div>
-  <hr>
-  <div class="info"><strong>PLACA:</strong> <span id="placa"></span></div>
-  <div class="info"><strong>ENTRADA:</strong> <span id="entrada"></span></div>
-  <div class="info"><strong>SALIDA:</strong> <span id="salida"></span></div>
-  <div class="info"><strong>DURACIÓN:</strong> <span id="duracion"></span></div>
-  <div class="valor" id="valor"></div>
-  <div class="barcode">
-    <svg id="barcode"></svg>
-  </div>
-  <hr>
-  <p style="font-size: 10px; text-align: center;" id="mensaje-legal"></p>
 </body>
 </html>
+
 
