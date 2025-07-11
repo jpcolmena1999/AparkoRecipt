@@ -46,8 +46,19 @@
     .footer {
       margin-top: 10px;
       text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .footer-label {
+      font-size: 13px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2px;
+    }
+    .placa {
       font-size: 16px;
       font-weight: bold;
+      margin: 6px 0;
     }
     hr {
       border: none;
@@ -64,7 +75,7 @@
   <hr>
   <p class="sub mensaje-legal" id="mensaje"></p>
 
-  <p><strong>PLACA:</strong> <span id="placa"></span></p>
+  <p class="placa">PLACA: <span id="placa"></span></p>
   <p><strong>ENTRADA:</strong> <span id="fechaEntrada"></span></p>
   <p><strong>SALIDA:</strong> <span id="fechaSalida"></span></p>
   <p><strong>DURACIÓN:</strong> <span id="duracion"></span></p>
@@ -73,6 +84,7 @@
   <p class="trackid">TRACK ID: <span id="trackid"></span></p>
 
   <hr>
+  <p class="footer-label">TOTAL A PAGAR:</p>
   <p class="footer">$<span id="valor"></span></p>
 
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -120,4 +132,5 @@
   </script>
 </body>
 </html>
+
 
