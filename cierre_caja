@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cierre de Caja</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @media print {
+      body { width: 80mm; }
+    }
+    body {
+      width: 80mm;
+      margin: 0 auto;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 8px;
+    }
+    .center { text-align: center; }
+    .titulo-principal { font-size: 22px; font-weight: bold; margin-bottom: 6px; }
+    .info-box { border: 1px dashed #000; padding: 8px; margin: 6px 0 8px; }
+    .info-box div { margin-bottom: 2px; }
+    .section-title {
+      font-weight: bold; padding: 6px 0; margin-top: 10px;
+      border-top: 1px dashed #000; border-bottom: 1px dashed #000;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    td { border: 1px solid #000; padding: 6px; }
+    td.right { text-align: right; }
+    td.left  { text-align: left; }
+    .total-venta { font-size: 22px; text-align: center; font-weight: bold; margin-top: 12px; }
+    .cuadre { font-size: 18px; text-align: center; margin-top: 10px; }
+  </style>
+  <script>
+    const fmt = n => Number(n || 0).toLocaleString('es-CO');
+
+    function qp(key){ const u=new URLSearchParams(location.search); return u.get(key)||""; }
+
+    function fill() {
+      // Encabezado
+      document.getElementById("fecha").textContent = qp("fecha");
+      document.getElementById("turno").textContent = qp("turno");
+
+      // Categoría (sin Furgones)
+      document.getElementById("carrosC").textContent = qp("carros");
+      document.getElementById("carrosV").textContent = fmt(qp("carrosVenta"));
+      document.getElementById("motosC").textContent  = qp("motos");
+      document.getElementById("motosV").textContent  = fmt(qp("motosVenta"));
+      document.getElementById("bicisC").textContent  = qp("bicis");
+      document.getElementById("bicisV").textContent  = fmt(qp("bicisVenta"));
+
+      // Billetes / monedas
+      ["100","50","20","10","5","2"].forEach(d=>{
+        document.getElementById("b"+d).textContent  = qp("b"+d);
+        document.getElementById("v"+d).textContent  = fmt(qp("v"+d));
+      });
+      document.getElementById("monedasV").textContent = fmt(qp("monedas"));
+
+      // Tarjeta / Transferencia (cantidad + valor)
+      document.getElementById("tarjC").textContent = qp("tarjetaCount") || "0";
+      document.getElementById("tarjV").textContent = fmt(qp("tarjetaValor") || 0);
+      document.getElementById("transC").textContent = qp("transCount") || "0";
+      document.getElementById("transV").textContent = fmt(qp("transValor") || 0);
+
+      // Gastos e ingresos (sin rojo)
+      document.getElementById("gastos").textContent        = fmt(qp("gastos"));
+      document.getElementById("otrosIngresos").textContent = fmt(qp("otrosIngresos"));
+
+      // Mensualidades
+      document.getElementById("mensualCount").textContent = qp("mensualCount");
+      document.getElementById("mensualValor").textContent = fmt(qp("mensualValor"));
+
+      // Totales
+      document.getElementById("efectivo").textContent   = fmt(qp("efectivo"));
+      document.getElementById("diferencial").textContent= fmt(qp("diferencial"));
+      document.getElementById("totalVenta").textContent = fmt(qp("totalVenta"));
+      document.getElementById("cuadre").textContent     = qp("estado");
+    }
+
+    window.onload = function () {
+      fill();
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => window.close(), 800);
+      }, 600);
+    };
+  </script>
+</head>
+<body>
+  <div class="center titulo-principal">LA RAMPLA PARKING</div>
+
+  <div class="info-box">
+    <div>📅 Fecha: <span id="fecha"></span></div>
+    <div>👤 Cajero: <span id="turno"></span></div>
+  </div>
+
+  <div class="section-title">CATEGORÍA</div>
+  <table>
+    <tr><td class="left">🚗 Carros</td><td class="right" id="carrosC"></td><td class="right">$<span id="carrosV"></span></td></tr>
+    <tr><td class="left">🏍️ Motos</td><td class="right" id="motosC"></td><td class="right">$<span id="motosV"></span></td></tr>
+    <tr><td class="left">🚲 Bicicletas</td><td class="right" id="bicisC"></td><td class="right">$<span id="bicisV"></span></td></tr>
+  </table>
+
+  <div class="section-title">DINERO ENTREGADO</div>
+  <table>
+    <tr><td class="left">$100.000</td><td class="right" id="b100"></td><td class="right">$<span id="v100"></span></td></tr>
+    <tr><td class="left">$50.000</td><td class="right" id="b50"></td><td class="right">$<span id="v50"></span></td></tr>
+    <tr><td class="left">$20.000</td><td class="right" id="b20"></td><td class="right">$<span id="v20"></span></td></tr>
+    <tr><td class="left">$10.000</td><td class="right" id="b10"></td><td class="right">$<span id="v10"></span></td></tr>
+    <tr><td class="left">$5.000</td><td class="right" id="b5"></td><td class="right">$<span id="v5"></span></td></tr>
+    <tr><td class="left">$2.000</td><td class="right" id="b2"></td><td class="right">$<span id="v2"></span></td></tr>
+    <tr><td class="left">Monedas</td><td class="right">—</td><td class="right">$<span id="monedasV"></span></td></tr>
+    <tr><td class="left">💳 Tarjeta</td><td class="right" id="tarjC"></td><td class="right">$<span id="tarjV"></span></td></tr>
+    <tr><td class="left">🔄 Transferencia</td><td class="right" id="transC"></td><td class="right">$<span id="transV"></span></td></tr>
+  </table>
+
+  <div class="section-title">GASTOS E INGRESOS</div>
+  <table>
+    <tr><td class="left">Gastos</td><td colspan="2" class="right">$<span id="gastos"></span></td></tr>
+    <tr><td class="left">Otros ingresos</td><td colspan="2" class="right">$<span id="otrosIngresos"></span></td></tr>
+  </table>
+
+  <div class="section-title">MENSUALIDADES</div>
+  <table>
+    <tr>
+      <td class="left">Cantidad</td><td class="right" id="mensualCount"></td>
+      <td class="left">Valor</td><td class="right">$<span id="mensualValor"></span></td>
+    </tr>
+  </table>
+
+  <div class="section-title">TOTALES</div>
+  <table>
+    <tr><td class="left">Total Efectivo</td><td colspan="2" class="right">$<span id="efectivo"></span></td></tr>
+    <tr><td class="left">Diferencial</td><td colspan="2" class="right">$<span id="diferencial"></span></td></tr>
+  </table>
+
+  <div class="total-venta">TOTAL VENTA<br>$<span id="totalVenta"></span></div>
+  <div class="cuadre">CUADRE: <span id="cuadre"></span></div>
+</body>
+</html>
