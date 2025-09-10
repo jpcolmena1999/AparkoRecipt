@@ -139,15 +139,22 @@
   <p class="small"><strong>PÓLIZA:</strong> <span id="poliza"></span></p>
 
   <!-- QR al final -->
-  <div id="qr-section" style="display:none;">
-    <div class="separador"></div>
-    <div class="qr-container">
-      <p class="qr-text"><strong>QR GENERA PARA:</strong></p>
-      <p class="qr-text">1. Inscripción Factura Electrónica</p>
-      <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
-      <div class="qr-box" id="qrcode"></div>
-      <p class="mensaje">Si no registra previamente su placa antes de pagar, la factura no saldrá a su nombre.</p>
-    </div>
+<div id="qr-section" style="display:none;">
+  <div class="separador"></div>
+  
+  <!-- Textos alineados a la derecha -->
+  <div style="text-align: right; width: 100%;">
+    <p><strong>QR GENERA PARA:</strong></p>
+    <p>1. Inscripción Factura Electrónica</p>
+    <p>2. Conoce nuestras condiciones de prestación del servicio.</p>
+  </div>
+  
+  <!-- QR centrado -->
+  <div class="qr-box" id="qrcode" style="text-align: center; margin: 10px 0;"></div>
+  
+  <!-- Mensaje centrado -->
+  <p class="mensaje">Si no registra previamente su placa antes de pagar, la factura no saldrá a su nombre.</p>
+</div>
   </div>
 </body>
 </html>
