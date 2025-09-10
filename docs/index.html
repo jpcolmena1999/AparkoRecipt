@@ -27,8 +27,9 @@
     .placa-grande { font-size: 28px; font-weight: bold; text-align: center; margin-top: 6px; }
     .barcode { text-align: center; margin-top: 4px; margin-bottom: 8px; }
     .titulo-bloque { font-weight: bold; margin-top: 8px; margin-bottom: 4px; }
-    .qr-box { text-align: center; margin-top: 10px; }
-    .qr-text { font-size: 12px; text-align: center; }
+    .qr-container { display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
+    .qr-box { margin: 8px 0; }
+    .qr-text { font-size: 12px; text-align: right; width: 100%; }
     .mensaje { font-size: 11px; text-align: center; margin-top: 6px; }
     .muted { font-size: 11px; line-height: 1.2; }
     .small { font-size: 11px; }
@@ -140,11 +141,13 @@
   <!-- QR al final -->
   <div id="qr-section" style="display:none;">
     <div class="separador"></div>
-    <p class="titulo-bloque center">QR GENERA PARA:</p>
-    <p class="qr-text">1. Inscripción Factura Electrónica</p>
-    <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
-    <div class="qr-box" id="qrcode"></div>
-    <p class="mensaje">Si no registra previamente su placa antes de pagar, la factura no saldrá a su nombre.</p>
+    <div class="qr-container">
+      <p class="qr-text"><strong>QR GENERA PARA:</strong></p>
+      <p class="qr-text">1. Inscripción Factura Electrónica</p>
+      <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
+      <div class="qr-box" id="qrcode"></div>
+      <p class="mensaje">Si no registra previamente su placa antes de pagar, la factura no saldrá a su nombre.</p>
+    </div>
   </div>
 </body>
 </html>
