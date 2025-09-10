@@ -6,7 +6,7 @@
 
   <!-- Barcode -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <!-- QR (solo 2 KB) -->
+  <!-- QR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
@@ -18,8 +18,6 @@
       font-family: Arial, sans-serif;
       padding: 10px;
       font-size: 13px;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
     }
     h1 { margin: 0 0 8px 0; font-size: 16px; font-weight: bold; text-align:left; }
     p { margin: 2px 0; }
@@ -29,13 +27,11 @@
     .placa-grande { font-size: 28px; font-weight: bold; text-align: center; margin-top: 6px; }
     .barcode { text-align: center; margin-top: 4px; margin-bottom: 8px; }
     .titulo-bloque { font-weight: bold; margin-top: 8px; margin-bottom: 4px; }
-    .fila { display: flex; gap: 8px; align-items: flex-start; }
-    .col { flex: 1; }
-    .qr-box { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
-    .qr-text { font-size: 12px; }
+    .qr-box { text-align: center; margin-top: 10px; }
+    .qr-text { font-size: 12px; text-align: center; }
+    .mensaje { font-size: 11px; text-align: center; margin-top: 6px; }
     .muted { font-size: 11px; line-height: 1.2; }
     .small { font-size: 11px; }
-    .center { text-align: center; }
   </style>
 
   <script>
@@ -68,7 +64,7 @@
       textOrDefault("direccion", p.DatosDireccion, "");
       textOrDefault("horario", p.DatosHorario, "");
 
-      // Datos de entrada
+      // Datos principales
       textOrDefault("fecha", p.fecha, "");
       textOrDefault("categoria", p.TipoPlaca, "");
       textOrDefault("placa", p.EntradaPlaca, "");
@@ -78,7 +74,7 @@
         "El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.");
       textOrDefault("poliza", p.DatosPoliza, "");
 
-      // Código de barras (placa)
+      // Código de barras
       JsBarcode("#barcode", hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-", {
         format: "CODE128",
         displayValue: true,
@@ -87,10 +83,9 @@
         margin: 0
       });
 
-      // Bloque QR condicional (Vs.LinkUser)
+      // QR al final
       const qrSection = document.getElementById("qr-section");
       if (hasValue(p["Vs.LinkUser"])) {
-        // Muestra sección y genera QR
         qrSection.style.display = "block";
         new QRCode(document.getElementById("qrcode"), {
           text: p["Vs.LinkUser"],
@@ -99,14 +94,12 @@
           correctLevel: QRCode.CorrectLevel.M
         });
       } else {
-        // Oculta completamente si viene vacío
         qrSection.style.display = "none";
       }
     }
 
     window.onload = function () {
       fillData();
-      // Imprimir automáticamente
       setTimeout(() => {
         window.print();
         setTimeout(() => window.close(), 800);
@@ -114,9 +107,8 @@
     };
   </script>
 </head>
-
 <body>
-  <!-- ENCABEZADO -->
+  <!-- Encabezado -->
   <h1 id="empresa"></h1>
   <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
   <p class="info" id="direccion"></p>
@@ -124,7 +116,7 @@
 
   <div class="separador"></div>
 
-  <!-- DATOS PRINCIPALES -->
+  <!-- Datos principales -->
   <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
   <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
 
@@ -137,25 +129,22 @@
 
   <div class="separador"></div>
 
-  <!-- BLOQUE QR (CONDICIONAL) -->
-  <div id="qr-section">
-    <div class="fila">
-      <div class="col">
-        <p class="titulo-bloque">QR GENERA PARA:</p>
-        <p class="qr-text">1. Inscripción Factura Electrónica</p>
-        <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
-      </div>
-      <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
-    </div>
-    <div class="separador"></div>
-  </div>
-
-  <!-- TEXTO LEGAL / PÓLIZA -->
+  <!-- Reglamento -->
   <p class="titulo-bloque">REGLAMENTO:</p>
   <p id="reglamento" class="muted"></p>
 
   <div class="separador"></div>
 
   <p class="small"><strong>PÓLIZA:</strong> <span id="poliza"></span></p>
+
+  <!-- QR al final -->
+  <div id="qr-section" style="display:none;">
+    <div class="separador"></div>
+    <p class="titulo-bloque center">QR GENERA PARA:</p>
+    <p class="qr-text">1. Inscripción Factura Electrónica</p>
+    <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
+    <div class="qr-box" id="qrcode"></div>
+    <p class="mensaje">Si no registra previamente su placa antes de pagar, la factura no saldrá a su nombre.</p>
+  </div>
 </body>
 </html>
