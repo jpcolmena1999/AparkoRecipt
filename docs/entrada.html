@@ -6,7 +6,7 @@
 
   <!-- Barcode -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <!-- QR (solo 2 KB) -->
+  <!-- QR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
@@ -29,8 +29,8 @@
     .placa-grande { font-size: 28px; font-weight: bold; text-align: center; margin-top: 6px; }
     .barcode { text-align: center; margin-top: 4px; margin-bottom: 8px; }
     .titulo-bloque { font-weight: bold; margin-top: 8px; margin-bottom: 4px; }
-    .fila { display: flex; gap: 8px; align-items: flex-start; }
-    .col { flex: 1; }
+    .fila { display: flex; gap: 8px; align-items: center; }
+    .col { flex: 1; text-align: right; }   /* textos 1/2/3 alineados a la derecha */
     .qr-box { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
     .qr-text { font-size: 12px; }
     .muted { font-size: 11px; line-height: 1.2; }
@@ -67,16 +67,16 @@
       textOrDefault("nit", p.DatosNit, "");
       textOrDefault("direccion", p.DatosDireccion, "");
       textOrDefault("horario", p.DatosHorario, "");
+      textOrDefault("polizaTop", p.DatosPoliza, ""); // PÓLIZA arriba
 
       // Datos de entrada
       textOrDefault("fecha", p.fecha, "");
       textOrDefault("categoria", p.TipoPlaca, "");
       textOrDefault("placa", p.EntradaPlaca, "");
 
-      // Reglamentación / póliza
+      // Reglamento
       textOrDefault("reglamento", p.VirtualReglamento,
         "El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.");
-      textOrDefault("poliza", p.DatosPoliza, "");
 
       // Código de barras (placa)
       JsBarcode("#barcode", hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-", {
@@ -90,7 +90,19 @@
       // Bloque QR condicional (Vs.LinkUser)
       const qrSection = document.getElementById("qr-section");
       if (hasValue(p["Vs.LinkUser"])) {
-        // Muestra sección y genera QR
+        // Render textos 1,2 y opcional 3 (Ve.FacMensaje)
+        const lista = document.getElementById("qr-text-list");
+        let html = `
+          <p class="titulo-bloque">QR GENERA PARA:</p>
+          <p class="qr-text">1. Inscripción Factura Electrónica</p>
+          <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
+        `;
+        if (hasValue(p["Ve.FacMensaje"])) {
+          html += `<p class="qr-text">3. ${p["Ve.FacMensaje"]}</p>`;
+        }
+        lista.innerHTML = html;
+
+        // Generar QR
         qrSection.style.display = "block";
         new QRCode(document.getElementById("qrcode"), {
           text: p["Vs.LinkUser"],
@@ -99,14 +111,12 @@
           correctLevel: QRCode.CorrectLevel.M
         });
       } else {
-        // Oculta completamente si viene vacío
         qrSection.style.display = "none";
       }
     }
 
     window.onload = function () {
       fillData();
-      // Imprimir automáticamente
       setTimeout(() => {
         window.print();
         setTimeout(() => window.close(), 800);
@@ -119,8 +129,9 @@
   <!-- ENCABEZADO -->
   <h1 id="empresa"></h1>
   <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
-  <p class="info" id="direccion"></p>
+  <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
   <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
+  <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
 
   <div class="separador"></div>
 
@@ -138,24 +149,18 @@
   <div class="separador"></div>
 
   <!-- BLOQUE QR (CONDICIONAL) -->
-  <div id="qr-section">
+  <div id="qr-section" style="display:none;">
     <div class="fila">
-      <div class="col">
-        <p class="titulo-bloque">QR GENERA PARA:</p>
-        <p class="qr-text">1. Inscripción Factura Electrónica</p>
-        <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
-      </div>
+      <!-- Textos a la derecha -->
+      <div class="col" id="qr-text-list"></div>
+      <!-- QR centrado en su caja -->
       <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
     </div>
     <div class="separador"></div>
   </div>
 
-  <!-- TEXTO LEGAL / PÓLIZA -->
+  <!-- TEXTO LEGAL -->
   <p class="titulo-bloque">REGLAMENTO:</p>
   <p id="reglamento" class="muted"></p>
-
-  <div class="separador"></div>
-
-  <p class="small"><strong>PÓLIZA:</strong> <span id="poliza"></span></p>
 </body>
 </html>
