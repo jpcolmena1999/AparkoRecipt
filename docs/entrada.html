@@ -29,13 +29,12 @@
     .placa-grande { font-size: 28px; font-weight: bold; text-align: center; margin-top: 6px; }
     .barcode { text-align: center; margin-top: 4px; margin-bottom: 8px; }
     .titulo-bloque { font-weight: bold; margin-top: 8px; margin-bottom: 4px; }
-    .fila { display: flex; gap: 8px; align-items: center; }
-    .col { flex: 1; text-align: right; }   /* textos 1/2/3 alineados a la derecha */
+    .fila { display: flex; gap: 8px; align-items: flex-start; }
+    .col { flex: 1; text-align: left; }   /* textos alineados a la izquierda */
     .qr-box { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
     .qr-text { font-size: 12px; }
     .muted { font-size: 11px; line-height: 1.2; }
     .small { font-size: 11px; }
-    .center { text-align: center; }
   </style>
 
   <script>
@@ -87,10 +86,9 @@
         margin: 0
       });
 
-      // Bloque QR condicional (Vs.LinkUser)
+      // Bloque QR condicional
       const qrSection = document.getElementById("qr-section");
       if (hasValue(p["Vs.LinkUser"])) {
-        // Render textos 1,2 y opcional 3 (Ve.FacMensaje)
         const lista = document.getElementById("qr-text-list");
         let html = `
           <p class="titulo-bloque">QR GENERA PARA:</p>
@@ -102,7 +100,6 @@
         }
         lista.innerHTML = html;
 
-        // Generar QR
         qrSection.style.display = "block";
         new QRCode(document.getElementById("qrcode"), {
           text: p["Vs.LinkUser"],
@@ -151,9 +148,7 @@
   <!-- BLOQUE QR (CONDICIONAL) -->
   <div id="qr-section" style="display:none;">
     <div class="fila">
-      <!-- Textos a la derecha -->
       <div class="col" id="qr-text-list"></div>
-      <!-- QR centrado en su caja -->
       <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
     </div>
     <div class="separador"></div>
@@ -162,5 +157,7 @@
   <!-- TEXTO LEGAL -->
   <p class="titulo-bloque">REGLAMENTO:</p>
   <p id="reglamento" class="muted"></p>
+
+  <div class="separador"></div> <!-- separador final -->
 </body>
 </html>
