@@ -22,6 +22,7 @@
     .sep{ border-top:1px solid #000; margin:8px 0; } /* separador continuo */
 
     .etq{ font-weight:bold; }
+    #direccion{ font-weight:bold; }                 /* Dirección en negrita */
     .placa{ font-weight:bold; font-size:18px; margin:6px 0; }
 
     /* Bloque FACTELEC: izq instrucciones, der track+QR */
@@ -46,7 +47,7 @@
     .total-etq{ font-size:12px; font-weight:bold; text-align:center; margin-top:6px; text-transform:uppercase; }
     .total-val{ font-size:26px; font-weight:800; text-align:center; line-height:1.1; margin-top:2px; }
 
-    .poliza{ font-size:11px; margin-top:4px; text-align:center; }
+    .poliza-top{ font-size:11px; margin-top:2px; }  /* Póliza bajo horario */
     .msg-inf{ font-size:11px; text-align:center; margin-top:8px; }
 
     /* N° Recibo cuando no hay factura */
@@ -59,17 +60,17 @@
   <!-- Encabezado -->
   <h1 id="empresa">APARKO</h1>
   <p class="info"><span class="etq">NIT:</span> <span id="nit"></span></p>
-  <p class="info" id="direccion"></p>
+  <p class="info" id="direccion"></p>                               <!-- Dirección en negrita -->
   <p class="info"><span class="etq">HORARIO:</span> <span id="horario"></span></p>
+  <p class="poliza-top" id="poliza"></p>                            <!-- Póliza abajo de horario -->
   <div class="sep"></div>
 
   <!-- Datos principales -->
   <p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
-  <p><span class="etq">TARIFA:</span> <span id="tipo"></span></p> <!-- Vs.TipoPlaca -->
+  <p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>   <!-- Vs.TipoPlaca -->
   <p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
   <p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
   <p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
-  <div class="poliza" id="poliza"></div>
   <div class="sep"></div>
 
   <!-- Bloque: instrucciones (izq) + TRACK ID arriba y QR abajo (der) -->
@@ -92,8 +93,9 @@
   <div class="total-etq">Total a pagar</div>
   <div class="total-val">$<span id="total"></span></div>
 
-  <!-- Mensaje inferior -->
+  <!-- Mensaje inferior + separador recto debajo -->
   <div id="msgSalida" class="msg-inf"></div>
+  <div class="sep"></div>   <!-- separador recto bajo el mensaje final -->
 
   <script>
     /* Helpers */
@@ -110,14 +112,14 @@
       setText("nit", qp("DatosNit"));
       setText("direccion", qp("DatosDireccion"));
       setText("horario", qp("DatosHorario"));
+      setText("poliza", qp("DatosPoliza"));              // Póliza justo debajo de horario
 
       // Datos
       setText("placa", qp("Placa"));
-      setText("tipo", qp("TipoPlaca"));  // <-- Vs.TipoPlaca
+      setText("tipo", qp("TipoPlaca"));                  // Vs.TipoPlaca
       setText("fentrada", qp("EntradaFecha"));
       setText("fsalida", qp("SalidaFecha"));
       setText("duracion", qp("SalidaDuracion"));
-      setText("poliza", qp("DatosPoliza"));
 
       // Total
       setText("total", fmtCOP(qp("SalidaValor")));
