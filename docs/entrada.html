@@ -2,162 +2,162 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Recibo de Salida - Aparko</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recibo de Parqueadero - Aparko</title>
 
+  <!-- Barcode -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <!-- QR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
     @media print { body { width: 80mm; } }
 
-    /* Base 80mm, Arial, separador continuo */
-    body{
-      width:80mm; margin:0 auto; padding:10px;
-      font-family: Arial, sans-serif; font-size:13px; color:#000;
+    body {
+      width: 80mm;
+      margin: 0 auto;
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      font-size: 13px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
-    h1{ margin:0 0 6px 0; font-size:16px; font-weight:bold; text-align:left; }
-    p{ margin:2px 0; }
-    .info{ margin-bottom:4px; }
-    .sep{ border-top:1px solid #000; margin:8px 0; } /* separador continuo */
-
-    .etq{ font-weight:bold; }
-    #direccion{ font-weight:bold; }                 /* Dirección en negrita */
-    .placa{ font-weight:bold; font-size:18px; margin:6px 0; }
-
-    /* Bloque FACTELEC: izq instrucciones, der track+QR */
-    .fact-bloque{
-      display:flex; justify-content:space-between; align-items:flex-start;
-      gap:10px; margin:8px 0;
-    }
-    .fact-izq{
-      flex:1; min-width:0; text-align:left; font-size:12px; line-height:1.3;
-      word-break:break-word;
-    }
-    .fact-der{
-      display:flex; flex-direction:column; align-items:center; gap:6px;
-    }
-    .track{
-      font-weight:bold; font-size:13px; text-align:center; max-width:110px;
-      word-break:break-all;
-    }
-    .qr{ width:90px; height:90px; }
-
-    /* Total moderado */
-    .total-etq{ font-size:12px; font-weight:bold; text-align:center; margin-top:6px; text-transform:uppercase; }
-    .total-val{ font-size:26px; font-weight:800; text-align:center; line-height:1.1; margin-top:2px; }
-
-    .poliza-top{ font-size:11px; margin-top:2px; }  /* Póliza bajo horario */
-    .msg-inf{ font-size:11px; text-align:center; margin-top:8px; }
-
-    /* N° Recibo cuando no hay factura */
-    .nrecibo{ font-weight:bold; font-size:13px; text-align:right; margin:6px 0; }
-
-    @media print { body{ margin:0; } }
+    h1 { margin: 0 0 8px 0; font-size: 16px; font-weight: bold; text-align:left; }
+    p { margin: 2px 0; }
+    .info { margin-bottom: 6px; }
+    .separador { border-top: 1px solid #000; margin: 8px 0; }
+    .placa-label { margin-top: 4px; font-weight: bold; }
+    .placa-grande { font-size: 28px; font-weight: bold; text-align: center; margin-top: 6px; }
+    .barcode { text-align: center; margin-top: 4px; margin-bottom: 8px; }
+    .titulo-bloque { font-weight: bold; margin-top: 8px; margin-bottom: 4px; }
+    .fila { display: flex; gap: 8px; align-items: flex-start; }
+    .col { flex: 1; text-align: left; }   /* textos alineados a la izquierda */
+    .qr-box { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
+    .qr-text { font-size: 12px; }
+    .muted { font-size: 11px; line-height: 1.2; }
+    .small { font-size: 11px; }
   </style>
-</head>
-<body>
-  <!-- Encabezado -->
-  <h1 id="empresa">APARKO</h1>
-  <p class="info"><span class="etq">NIT:</span> <span id="nit"></span></p>
-  <p class="info" id="direccion"></p>                               <!-- Dirección en negrita -->
-  <p class="info"><span class="etq">HORARIO:</span> <span id="horario"></span></p>
-  <p class="poliza-top" id="poliza"></p>                            <!-- Póliza abajo de horario -->
-  <div class="sep"></div>
-
-  <!-- Datos principales -->
-  <p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
-  <p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>   <!-- Vs.TipoPlaca -->
-  <p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
-  <p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
-  <p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
-  <div class="sep"></div>
-
-  <!-- Bloque: instrucciones (izq) + TRACK ID arriba y QR abajo (der) -->
-  <div id="bloqueFact" class="fact-bloque" style="display:none;">
-    <div class="fact-izq" id="msgFactura"></div>
-    <div class="fact-der">
-      <div class="track" id="trackLbl"></div>
-      <div id="qrcode" class="qr"></div>
-    </div>
-  </div>
-
-  <!-- Cuando NO hay factura -->
-  <div id="nReciboBox" class="nrecibo" style="display:none;">
-    N.° Recibo: <span id="nRecibo"></span>
-  </div>
-
-  <div class="sep"></div>
-
-  <!-- Total -->
-  <div class="total-etq">Total a pagar</div>
-  <div class="total-val">$<span id="total"></span></div>
-
-  <!-- Mensaje inferior + separador recto debajo -->
-  <div id="msgSalida" class="msg-inf"></div>
-  <div class="sep"></div>   <!-- separador recto bajo el mensaje final -->
 
   <script>
-    /* Helpers */
-    function qp(k){ return new URLSearchParams(location.search).get(k) || ""; }
-    function fmtCOP(n){
-      const v = Number(String(n).replace(/[^0-9.-]/g,""));
-      return isNaN(v) ? String(n) : v.toLocaleString("es-CO");
+    function getParams() {
+      const params = {};
+      location.search.slice(1).split("&").forEach(p => {
+        if (!p) return;
+        const [k, v] = p.split("=");
+        params[decodeURIComponent(k)] = decodeURIComponent((v || "").replace(/\+/g, " "));
+      });
+      return params;
     }
-    function setText(id, val){ const el=document.getElementById(id); if(el) el.textContent = val || ""; }
 
-    function init(){
+    function hasValue(x) {
+      if (x === undefined || x === null) return false;
+      const v = String(x).trim().toLowerCase();
+      return v !== "" && v !== "null" && v !== "undefined" && v !== "na";
+    }
+
+    function textOrDefault(elId, v, def="") {
+      document.getElementById(elId).textContent = hasValue(v) ? v : def;
+    }
+
+    function fillData() {
+      const p = getParams();
+
       // Encabezado
-      setText("empresa", qp("Empresa") || qp("TituloRecibo") || "APARKO");
-      setText("nit", qp("DatosNit"));
-      setText("direccion", qp("DatosDireccion"));
-      setText("horario", qp("DatosHorario"));
-      setText("poliza", qp("DatosPoliza"));              // Póliza justo debajo de horario
+      textOrDefault("empresa", p["Ve.Name"], "APARKO");
+      textOrDefault("nit", p.DatosNit, "");
+      textOrDefault("direccion", p.DatosDireccion, "");
+      textOrDefault("horario", p.DatosHorario, "");
+      textOrDefault("polizaTop", p.DatosPoliza, ""); // PÓLIZA arriba
 
-      // Datos
-      setText("placa", qp("Placa"));
-      setText("tipo", qp("TipoPlaca"));                  // Vs.TipoPlaca
-      setText("fentrada", qp("EntradaFecha"));
-      setText("fsalida", qp("SalidaFecha"));
-      setText("duracion", qp("SalidaDuracion"));
+      // Datos de entrada
+      textOrDefault("fecha", p.fecha, "");
+      textOrDefault("categoria", p.TipoPlaca, "");
+      textOrDefault("placa", p.EntradaPlaca, "");
 
-      // Total
-      setText("total", fmtCOP(qp("SalidaValor")));
+      // Reglamento
+      textOrDefault("reglamento", p.VirtualReglamento,
+        "El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.");
 
-      // Mensaje inferior
-      setText("msgSalida", qp("MensajeSalida"));
+      // Código de barras (placa)
+      JsBarcode("#barcode", hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-", {
+        format: "CODE128",
+        displayValue: true,
+        fontSize: 12,
+        height: 40,
+        margin: 0
+      });
 
-      // Factura vs Recibo
-      const esFactura = qp("EsFactura") === "1";
-      const tid = qp("TrackID");
-
-      if (esFactura) {
-        // Mensaje/instrucciones a la izquierda (MensajeLegal)
-        document.getElementById("msgFactura").textContent = qp("MensajeLegal") || "";
-
-        // TRACK ID arriba y QR abajo (derecha)
-        setText("trackLbl", tid ? "TRACK ID: " + tid : "");
-        if (tid) {
-          new QRCode(document.getElementById("qrcode"), {
-            text: tid, width: 90, height: 90,
-            colorDark:"#000000", colorLight:"#ffffff",
-            correctLevel: QRCode.CorrectLevel.M
-          });
+      // Bloque QR condicional
+      const qrSection = document.getElementById("qr-section");
+      if (hasValue(p["Vs.LinkUser"])) {
+        const lista = document.getElementById("qr-text-list");
+        let html = `
+          <p class="titulo-bloque">QR GENERA PARA:</p>
+          <p class="qr-text">1. Inscripción Factura Electrónica</p>
+          <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
+        `;
+        if (hasValue(p["Ve.FacMensaje"])) {
+          html += `<p class="qr-text">3. ${p["Ve.FacMensaje"]}</p>`;
         }
-        document.getElementById("bloqueFact").style.display = "flex";
+        lista.innerHTML = html;
+
+        qrSection.style.display = "block";
+        new QRCode(document.getElementById("qrcode"), {
+          text: p["Vs.LinkUser"],
+          width: 120,
+          height: 120,
+          correctLevel: QRCode.CorrectLevel.M
+        });
       } else {
-        // Recibo simple
-        const nro = qp("NRecibo") || tid;
-        if (nro) {
-          setText("nRecibo", nro);
-          document.getElementById("nReciboBox").style.display = "block";
-        }
+        qrSection.style.display = "none";
       }
-
-      // Auto-imprimir
-      setTimeout(()=>{ window.print(); setTimeout(()=>window.close(), 600); }, 300);
     }
-    window.onload = init;
+
+    window.onload = function () {
+      fillData();
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => window.close(), 800);
+      }, 700);
+    };
   </script>
+</head>
+
+<body>
+  <!-- ENCABEZADO -->
+  <h1 id="empresa"></h1>
+  <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
+  <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
+  <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
+  <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
+
+  <div class="separador"></div>
+
+  <!-- DATOS PRINCIPALES -->
+  <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
+  <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
+
+  <p class="placa-label">PLACA</p>
+  <div class="placa-grande" id="placa"></div>
+
+  <div class="barcode">
+    <svg id="barcode"></svg>
+  </div>
+
+  <div class="separador"></div>
+
+  <!-- BLOQUE QR (CONDICIONAL) -->
+  <div id="qr-section" style="display:none;">
+    <div class="fila">
+      <div class="col" id="qr-text-list"></div>
+      <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
+    </div>
+    <div class="separador"></div>
+  </div>
+
+  <!-- TEXTO LEGAL -->
+  <p class="titulo-bloque">REGLAMENTO:</p>
+  <p id="reglamento" class="muted"></p>
+
+  <div class="separador"></div> <!-- separador final -->
 </body>
 </html>
