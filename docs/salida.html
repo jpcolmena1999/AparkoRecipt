@@ -2,118 +2,105 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Recibo de Salida</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recibo de Salida - Aparko</title>
+
+  <!-- QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
+    @media print { body { width: 80mm; } }
 
-    /* Ticket 80mm */
+    /* Base 80mm con Arial */
     body{
-      width:80mm;
-      padding:8px 10px;
-      font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",Arial,sans-serif;
-      font-size:14px;color:#000
+      width:80mm; margin:0 auto; padding:10px;
+      font-family: Arial, sans-serif; font-size:13px; color:#000;
     }
+    h1{ margin:0 0 6px 0; font-size:16px; font-weight:bold; text-align:left; }
+    p{ margin:2px 0; }
+    .info{ margin-bottom:4px; }
+    .sep{ border-top:1px solid #000; margin:8px 0; } /* separador continuo */
 
-    .empresa{font-weight:800;font-size:18px;text-transform:uppercase}
-    .sub{font-size:13px;margin-top:2px}
-    .linea{border:none;border-top:1px dashed #000;margin:8px 0}
+    .etq{ font-weight:bold; }
+    .placa{ font-weight:bold; font-size:18px; margin:6px 0; }
 
-    .etq{font-weight:700}
-    .placa{font-weight:800;font-size:18px;margin:6px 0}
+    /* Bloque FACTELEC: izq instrucciones, der track+QR */
+    .fact-bloque{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin:8px 0; }
+    .fact-izq{ flex:1; min-width:0; text-align:left; font-size:12px; line-height:1.3; }
+    .fact-der{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .track{ font-weight:bold; font-size:13px; text-align:center; max-width:110px; word-break:break-all; }
+    .qr{ width:90px; height:90px; }
 
-    /* Bloque FACTURA: izq texto; der contenedor vertical con TRACK ID arriba y QR abajo */
-    .factura-bloque{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:8px 0
-    }
-    .factura-izq{
-      flex:1;min-width:0;text-align:left;font-size:13px;line-height:1.25
-    }
-    .factura-der{
-      display:flex;flex-direction:column;align-items:center;gap:6px
-    }
-    .trackid{
-      font-weight:800;font-size:14px;text-align:center;word-break:break-all;max-width:110px
-    }
-    .factura-qr{width:96px;height:96px}
+    /* Total moderado */
+    .total-etq{ font-size:12px; font-weight:bold; text-align:center; margin-top:6px; text-transform:uppercase; }
+    .total-val{ font-size:26px; font-weight:800; text-align:center; line-height:1.1; margin-top:2px; }
 
-    /* TOTAL grande */
-    .total-label{font-size:13px;font-weight:800;text-align:center;margin-top:6px}
-    .total-valor{
-      font-family:"Archivo Black",Impact,"Anton",sans-serif;
-      font-size:38px;line-height:1.05;text-align:center;font-weight:900;margin-top:2px
-    }
-
-    .poliza{font-size:12px;margin-top:4px;text-align:center}
-    .mensaje-inferior{font-size:12px;text-align:center;margin-top:8px}
+    .poliza{ font-size:11px; margin-top:4px; text-align:center; }
+    .msg-inf{ font-size:11px; text-align:center; margin-top:8px; }
 
     /* N° Recibo cuando no hay factura */
-    .nrecibo{font-weight:700;font-size:14px;text-align:right;margin:6px 0}
+    .nrecibo{ font-weight:bold; font-size:13px; text-align:right; margin:6px 0; }
 
-    @media print{body{margin:0}}
+    @media print { body{ margin:0; } }
   </style>
 </head>
 <body>
   <!-- Encabezado -->
-  <div class="empresa" id="empresa"></div>
-  <div class="sub"><span class="etq">NIT:</span> <span id="nit"></span></div>
-  <div class="sub" id="direccion"></div>
-  <div class="sub"><span class="etq">HORARIO:</span> <span id="horario"></span></div>
-  <hr class="linea" />
+  <h1 id="empresa">APARKO</h1>
+  <p class="info"><span class="etq">NIT:</span> <span id="nit"></span></p>
+  <p class="info" id="direccion"></p>
+  <p class="info"><span class="etq">HORARIO:</span> <span id="horario"></span></p>
+  <div class="sep"></div>
 
-  <!-- Datos servicio -->
-  <div class="placa">PLACA: <span id="placa"></span></div>
-  <div class="sub"><span class="etq">ENTRADA:</span> <span id="fentrada"></span></div>
-  <div class="sub"><span class="etq">SALIDA:</span> <span id="fsalida"></span></div>
-  <div class="sub"><span class="etq">DURACIÓN:</span> <span id="duracion"></span></div>
+  <!-- Datos principales -->
+  <p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
+  <p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
+  <p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
+  <p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
   <div class="poliza" id="poliza"></div>
-  <hr class="linea" />
+  <div class="sep"></div>
 
-  <!-- FACTELEC: texto izq / track+QR der -->
-  <div id="bloqueFactura" class="factura-bloque" style="display:none;">
-    <div class="factura-izq">
-      <div id="msgFactura"></div>
-    </div>
-    <div class="factura-der">
-      <div id="lblTrack" class="trackid"></div>
-      <div id="qrcode" class="factura-qr"></div>
+  <!-- Bloque: instrucciones (izq) + TRACK ID arriba y QR abajo (der) -->
+  <div id="bloqueFact" class="fact-bloque" style="display:none;">
+    <div class="fact-izq" id="msgFactura"></div>
+    <div class="fact-der">
+      <div class="track" id="trackLbl"></div>
+      <div id="qrcode" class="qr"></div>
     </div>
   </div>
 
   <!-- Cuando NO hay factura -->
-  <div id="nrecibo" class="nrecibo" style="display:none;">N.° RECIBO: <span id="nreciboVal"></span></div>
+  <div id="nReciboBox" class="nrecibo" style="display:none;">N.° Recibo: <span id="nRecibo"></span></div>
 
-  <hr class="linea" />
-  <!-- TOTAL -->
-  <div class="total-label">TOTAL A PAGAR</div>
-  <div class="total-valor">$<span id="total"></span></div>
+  <div class="sep"></div>
+
+  <!-- Total -->
+  <div class="total-etq">Total a pagar</div>
+  <div class="total-val">$<span id="total"></span></div>
 
   <!-- Mensaje inferior -->
-  <div id="msgSalida" class="mensaje-inferior"></div>
+  <div id="msgSalida" class="msg-inf"></div>
 
-  <!-- QR library -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script>
-    function qp(k){return new URLSearchParams(window.location.search).get(k)||""}
+    function qp(k){ return new URLSearchParams(location.search).get(k) || ""; }
     function fmtCOP(n){
-      const v=Number(String(n).replace(/[^0-9.-]/g,""));
-      return isNaN(v)?String(n):v.toLocaleString("es-CO");
+      const v = Number(String(n).replace(/[^0-9.-]/g,""));
+      return isNaN(v) ? String(n) : v.toLocaleString("es-CO");
     }
-    function setText(id,val){const el=document.getElementById(id);if(el) el.textContent=val||""}
+    function setText(id, val){ const el=document.getElementById(id); if(el) el.textContent = val || ""; }
 
     function init(){
       // Encabezado
-      setText("empresa", qp("Empresa") || qp("TituloRecibo") || "");
+      setText("empresa", qp("Empresa") || qp("TituloRecibo") || "APARKO");
       setText("nit", qp("DatosNit"));
       setText("direccion", qp("DatosDireccion"));
       setText("horario", qp("DatosHorario"));
-      setText("poliza", qp("DatosPoliza"));
 
-      // Servicio
+      // Datos
       setText("placa", qp("Placa"));
       setText("fentrada", qp("EntradaFecha"));
       setText("fsalida", qp("SalidaFecha"));
       setText("duracion", qp("SalidaDuracion"));
+      setText("poliza", qp("DatosPoliza"));
 
       // Total
       setText("total", fmtCOP(qp("SalidaValor")));
@@ -121,36 +108,33 @@
       // Mensaje inferior
       setText("msgSalida", qp("MensajeSalida"));
 
-      // Lógica factura/recibo
-      const esFactura = qp("EsFactura")==="1";
-      const bloqueFactura = document.getElementById("bloqueFactura");
-      const nreciboBox = document.getElementById("nrecibo");
+      // Factura vs Recibo
+      const esFactura = qp("EsFactura") === "1";
+      const tid = qp("TrackID");
 
-      if(esFactura){
-        // Mensaje de instrucciones a la izquierda
-        const msg = qp("MensajeLegal");
-        document.getElementById("msgFactura").textContent = msg || "";
-
-        // TRACK ID arriba del QR (derecha)
-        const tid = qp("TrackID");
-        setText("lblTrack", tid ? ("TRACK ID: "+tid) : "");
-        if(tid){
-          new QRCode(document.getElementById("qrcode"),{
-            text:tid,width:96,height:96,colorDark:"#000000",colorLight:"#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
+      if (esFactura) {
+        // Mensaje/instrucciones a la izquierda
+        document.getElementById("msgFactura").textContent = qp("MensajeLegal") || "";
+        // TRACK ID arriba y QR abajo (derecha)
+        setText("trackLbl", tid ? "TRACK ID: " + tid : "");
+        if (tid) {
+          new QRCode(document.getElementById("qrcode"), {
+            text: tid, width: 90, height: 90,
+            colorDark:"#000000", colorLight:"#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
           });
         }
-        bloqueFactura.style.display="flex";
-      }else{
+        document.getElementById("bloqueFact").style.display = "flex";
+      } else {
         // Recibo simple
-        const nro = qp("NRecibo") || qp("TrackID");
-        if(nro){ setText("nreciboVal", nro); nreciboBox.style.display="block"; }
+        const nro = qp("NRecibo") || tid;
+        if (nro) { setText("nRecibo", nro); document.getElementById("nReciboBox").style.display="block"; }
       }
 
-      // Auto print
+      // Auto-imprimir
       setTimeout(()=>{ window.print(); setTimeout(()=>window.close(), 600); }, 300);
     }
-    window.onload=init;
+    window.onload = init;
   </script>
 </body>
 </html>
