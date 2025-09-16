@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Comprobante de Pago - Mensualidad</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- QR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     @media print { body { width: 80mm; } }
@@ -24,9 +23,7 @@
     .etq{ font-weight:bold; }
     .sep{ border-top:1px solid #000; margin:8px 0; }
     .fila{ display:flex; justify-content:space-between; gap:8px; }
-    .total{
-      text-align:center; margin-top:8px;
-    }
+    .total{ text-align:center; margin-top:8px; }
     .total .etq{ font-size:12px; text-transform:uppercase; }
     .total .val{ font-size:26px; font-weight:800; line-height:1.1; margin-top:2px; }
     .qrbox{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px; }
@@ -97,7 +94,11 @@
         });
       }
 
-      const msg = "Este documento es un comprobante de pago. Si desea la factura electrónica, comuníquese con el administrador, regístrese y con el N.º de recibo podrá descargar su factura.";
+      const msg = firstNonEmpty(
+        qp("Vm.Mensaje"),
+        qp("vm_mensaje"),
+        "Este documento es un comprobante de pago. Si desea la factura electrónica, comuníquese con el administrador; con el N.º de recibo podrá descargar su factura."
+      );
       setText("msgLegal", msg);
 
       setTimeout(()=>{ window.print(); setTimeout(()=>window.close(), 600); }, 300);
