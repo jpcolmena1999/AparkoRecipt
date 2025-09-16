@@ -12,10 +12,17 @@
       width:80mm; margin:0 auto; padding:10px;
       font-family: Arial, sans-serif; font-size:13px; color:#000;
     }
-    h1{ margin:0 0 6px 0; font-size:16px; font-weight:bold; text-align:left; }
+    h1{ margin:0 0 2px 0; font-size:16px; font-weight:bold; text-align:left; }
+    .subtitulo{
+      margin:0 0 8px 0;
+      font-size:14px;
+      font-weight:bold;
+      text-align:left;
+      text-transform:uppercase;
+    }
     p{ margin:2px 0; }
     .etq{ font-weight:bold; }
-    .sep{ border-top:1px solid #000; margin:8px 0; } /* separador continuo */
+    .sep{ border-top:1px solid #000; margin:8px 0; }
     .fila{ display:flex; justify-content:space-between; gap:8px; }
     .total{
       text-align:center; margin-top:8px;
@@ -26,13 +33,12 @@
     .qr{ width:90px; height:90px; }
     .track{ font-weight:bold; font-size:13px; word-break:break-all; max-width:110px; text-align:left; }
     .msg{ font-size:11px; margin-top:8px; text-align:center; }
-    #direccion{ font-weight:bold; } /* Dirección en negrita */
-    .badge{ font-size:11px; font-weight:bold; text-transform:uppercase; text-align:center; }
+    #direccion{ font-weight:bold; }
   </style>
 </head>
 <body>
-  <div class="badge">Comprobante de pago</div>
   <h1 id="empresa">PARQUEADERO</h1>
+  <h2 class="subtitulo">PAGO DE MENSUALIDAD</h2>
   <p><span class="etq">NIT:</span> <span id="nit"></span></p>
   <p id="direccion"></p>
   <div class="sep"></div>
@@ -71,19 +77,16 @@
     function setText(id, val){ const el=document.getElementById(id); if(el) el.textContent = val || ""; }
 
     function init(){
-      // Encabezado
       setText("empresa", firstNonEmpty(qp("Empresa"), "APARKO"));
       setText("nit", qp("DatosNit"));
       setText("direccion", qp("DatosDireccion"));
 
-      // Datos
       setText("cliente", firstNonEmpty(qp("Cliente"), qp("me_nombre")));
       setText("fechaPago", firstNonEmpty(qp("FechaPago"), qp("me_fecha_pago")));
       setText("mensual", firstNonEmpty(qp("Mensual"), qp("Vp.Mensual"), qp("VpMensual")));
       setText("tipoTarifa", firstNonEmpty(qp("TipoTarifa"), qp("me_tipo")));
       setText("valor", fmtCOP(firstNonEmpty(qp("Valor"), qp("me_valor"))));
 
-      // N° Recibo + QR (misma data)
       const nro = firstNonEmpty(qp("NRecibo"), qp("pago_nrecibo"));
       setText("nRecibo", nro);
       if(nro){
@@ -94,11 +97,9 @@
         });
       }
 
-      // Mensaje legal
       const msg = "Este documento es un comprobante de pago. Si desea la factura electrónica, comuníquese con el administrador, regístrese y con el N.º de recibo podrá descargar su factura.";
       setText("msgLegal", msg);
 
-      // Auto-imprimir
       setTimeout(()=>{ window.print(); setTimeout(()=>window.close(), 600); }, 300);
     }
     window.onload = init;
