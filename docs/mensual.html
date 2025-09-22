@@ -44,12 +44,12 @@
   <p class="fila"><span class="etq">Fecha de pago:</span> <span id="fechaPago"></span></p>
   <p class="fila"><span class="etq">Mes cancelado:</span> <span id="mensual"></span></p>
   <p class="fila"><span class="etq">Tipo de tarifa:</span> <span id="tipoTarifa"></span></p>
-  <!-- NUEVO: Placa -->
-  <p class="fila"><span class="etq">Placa:</span> <span id="placa">(No placa)</span></p>
   <div class="sep"></div>
 
   <div class="qrbox">
     <div>
+      <p class="etq" style="font-size:14px; margin:0;">Placa:</p>
+      <div id="placa" style="font-size:18px; font-weight:900; margin-bottom:6px;"></div>
       <p class="etq">N.º de Recibo:</p>
       <div class="track" id="nRecibo"></div>
     </div>
@@ -85,10 +85,7 @@
       setText("mensual", firstNonEmpty(qp("Mensual"), qp("Vp.Mensual"), qp("VpMensual")));
       setText("tipoTarifa", firstNonEmpty(qp("TipoTarifa"), qp("me_tipo")));
       setText("valor", fmtCOP(firstNonEmpty(qp("Valor"), qp("me_valor"))));
-
-      // NUEVO: leer placa desde varias llaves posibles
-      const placa = firstNonEmpty(qp("Placa"), qp("placa"), qp("me_placa"), qp("Vm.Placa"), qp("VmPlaca"));
-      setText("placa", placa || "(No placa)");
+      setText("placa", firstNonEmpty(qp("Placa"), qp("me_placa"), qp("Vm.Placa")));
 
       const nro = firstNonEmpty(qp("NRecibo"), qp("pago_nrecibo"));
       setText("nRecibo", nro);
