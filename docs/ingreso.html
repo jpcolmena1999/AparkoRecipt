@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Recibo de Parqueadero - Aparko</title>
+
+  <!-- Barcode -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    @media print { body { width: 80mm; } }
+    body {
+      width: 80mm;
+      margin: 0 auto;
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      font-size: 13px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    h1 { margin: 0 0 8px 0; font-size: 16px; font-weight: bold; text-align:left; }
+    p { margin: 2px 0; }
+    .info { margin-bottom: 6px; }
+    .separador { border-top: 1px solid #000; margin: 8px 0; }
+    .placa-label { margin-top: 4px; font-weight: bold; }
+    .placa-grande { font-size: 28px; font-weight: bold; text-align: center; margin-top: 6px; }
+    .barcode { text-align: center; margin-top: 4px; margin-bottom: 8px; }
+    .titulo-bloque { font-weight: bold; margin-top: 8px; margin-bottom: 4px; }
+    .fila { display: flex; gap: 8px; align-items: flex-start; }
+    .col { flex: 1; text-align: left; }
+    .qr-box { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
+    .qr-text { font-size: 12px; }
+    .muted { font-size: 11px; line-height: 1.2; }
+    .small { font-size: 11px; }
+  </style>
+
+  <script>
+    // Helpers
+    function getParams() {
+      const params = {};
+      location.search.slice(1).split("&").forEach(p => {
+        if (!p) return;
+        const [k, v] = p.split("=");
+        params[decodeURIComponent(k)] = decodeURIComponent((v || "").replace(/\+/g, " "));
+      });
+      return params;
+    }
+    function hasValue(x) {
+      if (x === undefined || x === null) return false;
+      const v = String(x).trim().toLowerCase();
+      return v !== "" && v !== "null" && v !== "undefined" && v !== "na";
+    }
+    function textOrDefault(elId, v, def="") {
+      const el = document.getElementById(elId);
+      if (el) el.textContent = hasValue(v) ? v : def;
+    }
+    function isTruthy(v) {
+      if (v === undefined || v === null) return false;
+      const s = String(v).trim().toLowerCase();
+      return ["true","1","si","sí","yes","y"].includes(s);
+    }
+
+    function fillData() {
+      const p = getParams();
+
+      // Encabezado
+      textOrDefault("empresa", p["Ve.Name"], "APARKO");
+      textOrDefault("nit", p.DatosNit, "");
+      textOrDefault("direccion", p.DatosDireccion, "");
+      textOrDefault("horario", p.DatosHorario, "");
+      textOrDefault("polizaTop", p.DatosPoliza, "");
+
+      // Datos de entrada
+      textOrDefault("fecha", p.fecha, "");
+      textOrDefault("categoria", p.TipoPlaca, "");
+      textOrDefault("placa", p.EntradaPlaca, "");
+
+      // Reglamento
+      textOrDefault("reglamento", p.VirtualReglamento,
+        "El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.");
+
+      // Código de barras (placa)
+      JsBarcode("#barcode", hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-", {
+        format: "CODE128",
+        displayValue: true,
+        fontSize: 12,
+        height: 40,
+        margin: 0
+      });
+
+      // Bloque QR condicional (link + flag Ve.ValidaRecibo)
+      const qrSection = document.getElementById("qr-section");
+      const sepQrTop  = document.getElementById("sep-qr-top");
+
+      const tieneLinkQR  = hasValue(p["Vs.LinkUser"]);
+      const validaRecibo = isTruthy(p["Ve.ValidaRecibo"]);
+
+      if (tieneLinkQR && validaRecibo) {
+        const lista = document.getElementById("qr-text-list");
+        let html = `
+          <p class="titulo-bloque">QR GENERA PARA:</p>
+          <p class="qr-text">1. Inscripción Factura Electrónica</p>
+          <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
+        `;
+        if (hasValue(p["Ve.FacMensaje"])) {
+          html += `<p class="qr-text">3. ${p["Ve.FacMensaje"]}</p>`;
+        }
+        lista.innerHTML = html;
+
+        if (sepQrTop) sepQrTop.style.display = "block";
+        qrSection.style.display = "block";
+
+        new QRCode(document.getElementById("qrcode"), {
+          text: p["Vs.LinkUser"],
+          width: 120,
+          height: 120,
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else {
+        // Oculta el bloque y la separadora para que no queden líneas dobles
+        if (sepQrTop) sepQrTop.style.display = "none";
+        qrSection.style.display = "none";
+      }
+    }
+
+    window.onload = function () {
+      fillData();
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => window.close(), 800);
+      }, 700);
+    };
+  </script>
+</head>
+
+<body>
+  <!-- ENCABEZADO -->
+  <h1 id="empresa"></h1>
+  <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
+  <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
+  <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
+  <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
+
+  <div class="separador"></div>
+
+  <!-- DATOS PRINCIPALES -->
+  <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
+  <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
+
+  <p class="placa-label">PLACA</p>
+  <div class="placa-grande" id="placa"></div>
+
+  <div class="barcode">
+    <svg id="barcode"></svg>
+  </div>
+
+  <!-- separadora inmediatamente antes del bloque QR -->
+  <div class="separador" id="sep-qr-top"></div>
+
+  <!-- BLOQUE QR (CONDICIONAL) -->
+  <div id="qr-section" style="display:none;">
+    <div class="fila">
+      <div class="col" id="qr-text-list"></div>
+      <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
+    </div>
+    <div class="separador"></div>
+  </div>
+
+  <!-- TEXTO LEGAL -->
+  <p class="titulo-bloque">REGLAMENTO:</p>
+  <p id="reglamento" class="muted"></p>
+</body>
+</html>
