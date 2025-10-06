@@ -90,9 +90,9 @@
         margin: 0
       });
 
-      // Bloque QR condicional (al final)
+      // Bloque QR condicional (link + flag Ve.ValidaRecibo)
       const qrSection = document.getElementById("qr-section");
-      const sepQrBottom = document.getElementById("sep-qr-bottom");
+      const sepQrTop  = document.getElementById("sep-qr-top");
 
       const tieneLinkQR  = hasValue(p["Vs.LinkUser"]);
       const validaRecibo = isTruthy(p["Ve.ValidaRecibo"]);
@@ -109,7 +109,7 @@
         }
         lista.innerHTML = html;
 
-        if (sepQrBottom) sepQrBottom.style.display = "block";
+        if (sepQrTop) sepQrTop.style.display = "block";
         qrSection.style.display = "block";
 
         new QRCode(document.getElementById("qrcode"), {
@@ -119,8 +119,8 @@
           correctLevel: QRCode.CorrectLevel.M
         });
       } else {
-        // Oculta el bloque y la separadora inferior
-        if (sepQrBottom) sepQrBottom.style.display = "none";
+        // Oculta el bloque y la separadora para que no queden líneas dobles
+        if (sepQrTop) sepQrTop.style.display = "none";
         qrSection.style.display = "none";
       }
     }
@@ -156,14 +156,8 @@
     <svg id="barcode"></svg>
   </div>
 
-  <div class="separador"></div>
-
-  <!-- TEXTO LEGAL -->
-  <p class="titulo-bloque">REGLAMENTO:</p>
-  <p id="reglamento" class="muted"></p>
-
-  <!-- separadora antes del bloque QR al FINAL -->
-  <div class="separador" id="sep-qr-bottom"></div>
+  <!-- separadora inmediatamente antes del bloque QR -->
+  <div class="separador" id="sep-qr-top"></div>
 
   <!-- BLOQUE QR (CONDICIONAL) -->
   <div id="qr-section" style="display:none;">
@@ -173,5 +167,9 @@
     </div>
     <div class="separador"></div>
   </div>
+
+  <!-- TEXTO LEGAL -->
+  <p class="titulo-bloque">REGLAMENTO:</p>
+  <p id="reglamento" class="muted"></p>
 </body>
 </html>
