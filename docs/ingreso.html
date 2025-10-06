@@ -4,10 +4,9 @@
   <meta charset="UTF-8" />
   <title>Recibo de Parqueadero - Aparko</title>
 
-  <!-- Barcode -->
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <!-- QR -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Librerías externas con defer -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
   <style>
     @media print { body { width: 80mm; } }
@@ -19,6 +18,8 @@
       font-size: 13px;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+      background: #fff;
+      color: #000;
     }
     h1 { margin: 0 0 8px 0; font-size: 16px; font-weight: bold; text-align:left; }
     p { margin: 2px 0; }
@@ -34,16 +35,65 @@
     .qr-text { font-size: 12px; }
     .muted { font-size: 11px; line-height: 1.2; }
     .small { font-size: 11px; }
+    /* Fallback si algo falla: que no se quede en blanco */
+    noscript { display:block; margin-top:10px; font-size:12px; }
   </style>
+</head>
 
+<body>
+  <!-- ENCABEZADO -->
+  <h1 id="empresa">APARKO</h1>
+  <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
+  <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
+  <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
+  <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
+
+  <div class="separador"></div>
+
+  <!-- DATOS PRINCIPALES -->
+  <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
+  <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
+
+  <p class="placa-label">PLACA</p>
+  <div class="placa-grande" id="placa">-</div>
+
+  <div class="barcode">
+    <svg id="barcode"></svg>
+  </div>
+
+  <div class="separador"></div>
+
+  <!-- TEXTO LEGAL -->
+  <p class="titulo-bloque">REGLAMENTO:</p>
+  <p id="reglamento" class="muted">
+    El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.
+  </p>
+
+  <!-- separadora previa al QR (abajo) -->
+  <div class="separador" id="sep-qr-bottom"></div>
+
+  <!-- BLOQUE QR (CONDICIONAL) -->
+  <div id="qr-section" style="display:none;">
+    <div class="fila">
+      <div class="col" id="qr-text-list"></div>
+      <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
+    </div>
+    <div class="separador"></div>
+  </div>
+
+  <noscript>Este recibo funciona mejor con JavaScript habilitado.</noscript>
+
+  <!-- === SCRIPT PRINCIPAL (al final para evitar pantalla en blanco) === -->
   <script>
-    // Helpers
+    // --- Helpers ---
     function getParams() {
       const params = {};
-      location.search.slice(1).split("&").forEach(p => {
+      const q = location.search.startsWith("?") ? location.search.slice(1) : location.search;
+      q.split("&").forEach(p => {
         if (!p) return;
         const [k, v] = p.split("=");
-        params[decodeURIComponent(k)] = decodeURIComponent((v || "").replace(/\+/g, " "));
+        params[decodeURIComponent(k || "")] =
+          decodeURIComponent((v || "").replace(/\+/g, " "));
       });
       return params;
     }
@@ -62,7 +112,50 @@
       return ["true","1","si","sí","yes","y"].includes(s);
     }
 
-    function fillData() {
+    function safeMakeBarcode(selector, value) {
+      try {
+        if (window.JsBarcode && document.querySelector(selector)) {
+          JsBarcode(selector, value, {
+            format: "CODE128",
+            displayValue: true,
+            fontSize: 12,
+            height: 40,
+            margin: 0
+          });
+        } else {
+          // Fallback: muestra la placa en texto bajo el placeholder
+          const svg = document.querySelector(selector);
+          if (svg) svg.outerHTML = '<div class="small">' + (value || '-') + '</div>';
+        }
+      } catch (e) {
+        const svg = document.querySelector(selector);
+        if (svg) svg.outerHTML = '<div class="small">' + (value || '-') + '</div>';
+        console.warn("Barcode error:", e);
+      }
+    }
+
+    function safeMakeQR(containerId, text) {
+      try {
+        if (window.QRCode && document.getElementById(containerId)) {
+          new QRCode(document.getElementById(containerId), {
+            text: text,
+            width: 120,
+            height: 120,
+            correctLevel: window.QRCode.CorrectLevel.M
+          });
+        } else {
+          // Fallback: imprime la URL en texto
+          const box = document.getElementById(containerId);
+          if (box) box.innerHTML = '<div class="small">' + (text || '') + '</div>';
+        }
+      } catch (e) {
+        const box = document.getElementById(containerId);
+        if (box) box.innerHTML = '<div class="small">' + (text || '') + '</div>';
+        console.warn("QR error:", e);
+      }
+    }
+
+    function render() {
       const p = getParams();
 
       // Encabezado
@@ -75,24 +168,19 @@
       // Datos de entrada
       textOrDefault("fecha", p.fecha, "");
       textOrDefault("categoria", p.TipoPlaca, "");
-      textOrDefault("placa", p.EntradaPlaca, "");
+      textOrDefault("placa", p.EntradaPlaca, "-");
 
       // Reglamento
       textOrDefault("reglamento", p.VirtualReglamento,
         "El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.");
 
-      // Código de barras (placa)
-      JsBarcode("#barcode", hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-", {
-        format: "CODE128",
-        displayValue: true,
-        fontSize: 12,
-        height: 40,
-        margin: 0
-      });
+      // Barcode
+      const placaParaCodigo = hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-";
+      safeMakeBarcode("#barcode", placaParaCodigo);
 
-      // Bloque QR condicional (link + flag Ve.ValidaRecibo)
+      // QR al final
       const qrSection = document.getElementById("qr-section");
-      const sepQrTop  = document.getElementById("sep-qr-top");
+      const sepQrBottom = document.getElementById("sep-qr-bottom");
 
       const tieneLinkQR  = hasValue(p["Vs.LinkUser"]);
       const validaRecibo = isTruthy(p["Ve.ValidaRecibo"]);
@@ -109,67 +197,28 @@
         }
         lista.innerHTML = html;
 
-        if (sepQrTop) sepQrTop.style.display = "block";
+        if (sepQrBottom) sepQrBottom.style.display = "block";
         qrSection.style.display = "block";
 
-        new QRCode(document.getElementById("qrcode"), {
-          text: p["Vs.LinkUser"],
-          width: 120,
-          height: 120,
-          correctLevel: QRCode.CorrectLevel.M
-        });
+        safeMakeQR("qrcode", p["Vs.LinkUser"]);
       } else {
-        // Oculta el bloque y la separadora para que no queden líneas dobles
-        if (sepQrTop) sepQrTop.style.display = "none";
+        if (sepQrBottom) sepQrBottom.style.display = "none";
         qrSection.style.display = "none";
       }
+
+      // Auto imprimir (espera a que todo esté pintado)
+      setTimeout(() => {
+        try { window.print(); } catch (e) { /* ignore */ }
+        setTimeout(() => { try { window.close(); } catch (e) { /* ignore */ } }, 800);
+      }, 500);
     }
 
-    window.onload = function () {
-      fillData();
-      setTimeout(() => {
-        window.print();
-        setTimeout(() => window.close(), 800);
-      }, 700);
-    };
+    // Espera a que todo (incluidas libs con defer) esté listo
+    if (document.readyState === "complete") {
+      render();
+    } else {
+      window.addEventListener("load", render);
+    }
   </script>
-</head>
-
-<body>
-  <!-- ENCABEZADO -->
-  <h1 id="empresa"></h1>
-  <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
-  <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
-  <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
-  <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
-
-  <div class="separador"></div>
-
-  <!-- DATOS PRINCIPALES -->
-  <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
-  <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
-
-  <p class="placa-label">PLACA</p>
-  <div class="placa-grande" id="placa"></div>
-
-  <div class="barcode">
-    <svg id="barcode"></svg>
-  </div>
-
-  <!-- separadora inmediatamente antes del bloque QR -->
-  <div class="separador" id="sep-qr-top"></div>
-
-  <!-- BLOQUE QR (CONDICIONAL) -->
-  <div id="qr-section" style="display:none;">
-    <div class="fila">
-      <div class="col" id="qr-text-list"></div>
-      <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
-    </div>
-    <div class="separador"></div>
-  </div>
-
-  <!-- TEXTO LEGAL -->
-  <p class="titulo-bloque">REGLAMENTO:</p>
-  <p id="reglamento" class="muted"></p>
 </body>
 </html>
