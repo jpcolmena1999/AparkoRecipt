@@ -107,5 +107,71 @@
         if (hasValue(p["Ve.FacMensaje"])) {
           html += `<p class="qr-text">3. ${p["Ve.FacMensaje"]}</p>`;
         }
-        lista.innerHTML = html
+        lista.innerHTML = html;
 
+        if (sepQrBottom) sepQrBottom.style.display = "block";
+        qrSection.style.display = "block";
+
+        new QRCode(document.getElementById("qrcode"), {
+          text: p["Vs.LinkUser"],
+          width: 120,
+          height: 120,
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else {
+        // Oculta el bloque y la separadora inferior
+        if (sepQrBottom) sepQrBottom.style.display = "none";
+        qrSection.style.display = "none";
+      }
+    }
+
+    window.onload = function () {
+      fillData();
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => window.close(), 800);
+      }, 700);
+    };
+  </script>
+</head>
+
+<body>
+  <!-- ENCABEZADO -->
+  <h1 id="empresa"></h1>
+  <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
+  <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
+  <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
+  <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
+
+  <div class="separador"></div>
+
+  <!-- DATOS PRINCIPALES -->
+  <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
+  <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
+
+  <p class="placa-label">PLACA</p>
+  <div class="placa-grande" id="placa"></div>
+
+  <div class="barcode">
+    <svg id="barcode"></svg>
+  </div>
+
+  <div class="separador"></div>
+
+  <!-- TEXTO LEGAL -->
+  <p class="titulo-bloque">REGLAMENTO:</p>
+  <p id="reglamento" class="muted"></p>
+
+  <!-- separadora antes del bloque QR al FINAL -->
+  <div class="separador" id="sep-qr-bottom"></div>
+
+  <!-- BLOQUE QR (CONDICIONAL) -->
+  <div id="qr-section" style="display:none;">
+    <div class="fila">
+      <div class="col" id="qr-text-list"></div>
+      <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
+    </div>
+    <div class="separador"></div>
+  </div>
+</body>
+</html>
