@@ -28,7 +28,7 @@
     #direccion{ font-weight:bold; }
     .placa{ font-weight:bold; font-size:18px; margin:6px 0; }
 
-    /* Línea simple N° Recibo (sin “marco”) */
+    /* Línea simple N° Recibo (sin marco) */
     .nline{
       font-weight:bold;
       font-size:13px;
@@ -88,7 +88,6 @@
 </head>
 
 <body>
-  <!-- Encabezado -->
   <h1 id="empresa">APARKO</h1>
   <p class="info"><span class="etq">NIT:</span> <span id="nit"></span></p>
   <p class="info" id="direccion"></p>
@@ -96,45 +95,39 @@
   <p class="poliza-top" id="poliza"></p>
   <div class="sep"></div>
 
-  <!-- Datos principales -->
   <p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
   <p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>
   <p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
   <p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
   <p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
 
-  <!-- Línea simple: SOLO N° Recibo (para Switch=FALSE o EsFactura=0) -->
+  <!-- Solo N° Recibo (Switch=FALSE) -->
   <div id="nReciboLine" class="nline" style="display:none;">
     N.° Recibo: <span id="nRecibo"></span>
   </div>
 
   <div class="sep"></div>
 
-  <!-- Bloque Factura (solo si EsFactura=1 y Switch=TRUE) -->
+  <!-- Switch=TRUE -> Mensaje izquierda + QR/Barcode derecha -->
   <div id="bloqueFact" class="fact-bloque" style="display:none;">
     <div class="fact-izq" id="msgFactura"></div>
-
     <div class="fact-der">
       <div class="recibo-lbl" id="reciboLbl"></div>
 
-      <!-- QR si Vs.QrFac=TRUE -->
       <div id="qrWrap" style="display:none;">
-        <div id="qrcode" class="qr" aria-label="QR para página de factura"></div>
+        <div id="qrcode" class="qr"></div>
         <div class="scan">Escanea el QR</div>
       </div>
 
-      <!-- Barcode si Vs.QrFac=FALSE -->
       <div id="barWrap" class="barcode" style="display:none;">
         <svg id="barcode"></svg>
       </div>
     </div>
   </div>
 
-  <!-- Total -->
   <div class="total-etq">Total a pagar</div>
   <div class="total-val">$<span id="total"></span></div>
 
-  <!-- Mensaje inferior -->
   <div id="msgSalida" class="msg-inf"></div>
   <div class="sep"></div>
 
@@ -164,10 +157,10 @@
     }
 
     function safeMakeQR(containerId, text, size){
+      const box = document.getElementById(containerId);
+      if (!box) return;
+      box.innerHTML = "";
       try{
-        const box = document.getElementById(containerId);
-        if (!box) return;
-        box.innerHTML = "";
         if (window.QRCode) {
           new QRCode(box, {
             text: text || "",
@@ -179,16 +172,14 @@
           box.innerHTML = '<div class="small">' + (text || "") + '</div>';
         }
       } catch(e){
-        const box = document.getElementById(containerId);
-        if (box) box.innerHTML = '<div class="small">' + (text || "") + '</div>';
-        console.warn("QR error:", e);
+        box.innerHTML = '<div class="small">' + (text || "") + '</div>';
       }
     }
 
     function safeMakeBarcode(selector, value){
+      const el = document.querySelector(selector);
+      if (!el) return;
       try{
-        const el = document.querySelector(selector);
-        if (!el) return;
         if (window.JsBarcode) {
           JsBarcode(selector, value, {
             format: "CODE128",
@@ -201,68 +192,56 @@
           el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
         }
       } catch(e){
-        const el = document.querySelector(selector);
-        if (el) el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
-        console.warn("Barcode error:", e);
+        el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
       }
     }
 
     function init(){
-      // Encabezado
       setText("empresa", qp("Empresa") || "APARKO");
       setText("nit", qp("DatosNit"));
       setText("direccion", qp("DatosDireccion"));
       setText("horario", qp("DatosHorario"));
       setText("poliza", qp("DatosPoliza"));
 
-      // Datos
       setText("placa", qp("Placa"));
       setText("tipo", qp("TipoPlaca"));
       setText("fentrada", qp("EntradaFecha"));
       setText("fsalida", qp("SalidaFecha"));
       setText("duracion", qp("SalidaDuracion"));
 
-      // Total
       setText("total", fmtCOP(qp("SalidaValor")));
-
-      // Mensaje inferior
       setText("msgSalida", qp("MensajeSalida"));
 
-      // Params
-      const esFactura = qp("EsFactura") === "1";
-      const switchOn  = isTruthy(qp("Vs.Switch"));
-      const qrFac     = isTruthy(qp("Vs.QrFac"));
-      const webFac    = qp("Vs.WebFac");
-      const msgLegal  = qp("MensajeLegal");
-
-      const nrec = qp("NRecibo") || qp("TrackID") || "";
+      const switchOn = isTruthy(qp("Vs.Switch"));
+      const qrFac    = isTruthy(qp("Vs.QrFac"));
+      const webFac   = qp("Vs.WebFac");
+      const msgLegal = qp("MensajeLegal");
+      const nrec     = qp("NRecibo") || qp("TrackID") || "";
 
       const nReciboLine = document.getElementById("nReciboLine");
       const bloqueFact  = document.getElementById("bloqueFact");
       const qrWrap      = document.getElementById("qrWrap");
       const barWrap     = document.getElementById("barWrap");
 
-      if (!esFactura || !switchOn) {
-        // ✅ Switch=FALSE (aunque sea factura) => SOLO N° Recibo (sin mensajeFactura, sin QR, sin barcode)
+      if (!switchOn) {
+        // ✅ Switch=FALSE => solo N° Recibo (sin mensaje, sin QR, sin barcode)
         if (hasValue(nrec)) {
           setText("nRecibo", nrec);
           nReciboLine.style.display = "block";
         }
         bloqueFact.style.display = "none";
       } else {
-        // ✅ Switch=TRUE y EsFactura=1 => SIEMPRE MensajeFactura a la izquierda + (QR o Barcode) a la derecha
+        // ✅ Switch=TRUE => SIEMPRE mensaje izquierda + (QR si QrFac=TRUE, si no barcode del NRecibo)
         document.getElementById("msgFactura").textContent = msgLegal || "";
         setText("reciboLbl", hasValue(nrec) ? ("N.° Recibo: " + nrec) : "N.° Recibo:");
 
         nReciboLine.style.display = "none";
 
         if (qrFac && hasValue(webFac)) {
-          // Vs.QrFac=TRUE => QR a Vs.WebFac
           qrWrap.style.display = "block";
           barWrap.style.display = "none";
           safeMakeQR("qrcode", webFac, 90);
         } else {
-          // Vs.QrFac=FALSE => Barcode del N° Recibo
           qrWrap.style.display = "none";
           barWrap.style.display = "block";
           safeMakeBarcode("#barcode", hasValue(nrec) ? nrec : "-");
@@ -271,7 +250,6 @@
         bloqueFact.style.display = "flex";
       }
 
-      // Auto imprimir
       setTimeout(()=>{
         try { window.print(); } catch(e) {}
         setTimeout(()=>{ try { window.close(); } catch(e) {} }, 600);
