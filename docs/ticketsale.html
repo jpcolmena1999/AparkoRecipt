@@ -28,46 +28,60 @@
     #direccion{ font-weight:bold; }
     .placa{ font-weight:bold; font-size:18px; margin:6px 0; }
 
-    /* Bloque FACTELEC (solo cuando Vs.Switch = TRUE y EsFactura=1) */
+    /* Línea simple N° Recibo (sin “marco”) */
+    .nline{
+      font-weight:bold;
+      font-size:13px;
+      text-align:right;
+      margin:6px 0;
+    }
+
+    /* Bloque factura: izq mensaje, der código */
     .fact-bloque{
-      display:flex; justify-content:space-between; align-items:flex-start;
-      gap:10px; margin:8px 0;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin:8px 0;
     }
     .fact-izq{
-      flex:1; min-width:0; text-align:left; font-size:12px; line-height:1.3;
+      flex:1;
+      min-width:0;
+      text-align:left;
+      font-size:12px;
+      line-height:1.3;
       word-break:break-word;
     }
     .fact-der{
-      display:flex; flex-direction:column; align-items:center; gap:6px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
       width:120px;
     }
-    .track{
-      font-weight:bold; font-size:13px; text-align:center; max-width:120px;
+    .recibo-lbl{
+      font-weight:bold;
+      font-size:12px;
+      text-align:center;
+      max-width:120px;
       word-break:break-all;
     }
-    .scan{
-      font-size:11px; font-weight:bold; text-align:center;
-      margin-top:2px;
-    }
 
-    /* QR de factura (cuando Vs.QrFac = TRUE) */
+    /* QR */
     .qr{ width:90px; height:90px; display:flex; align-items:center; justify-content:center; }
     .qr img, .qr canvas{ display:block; margin:0 auto; }
+    .scan{ font-size:11px; font-weight:bold; text-align:center; margin-top:2px; }
 
-    /* Barcode (cuando Vs.QrFac = FALSE) */
-    .barcode { text-align:center; width:120px; }
-    .barcode svg { width:120px; height:auto; }
+    /* Barcode */
+    .barcode{ text-align:center; width:120px; }
+    .barcode svg{ width:120px; height:auto; }
+    .small{ font-size:11px; }
 
     .total-etq{ font-size:12px; font-weight:bold; text-align:center; margin-top:6px; text-transform:uppercase; }
     .total-val{ font-size:26px; font-weight:800; text-align:center; line-height:1.1; margin-top:2px; }
 
     .poliza-top{ font-size:11px; margin-top:2px; }
     .msg-inf{ font-size:11px; text-align:center; margin-top:8px; }
-
-    /* Caja de número (estilo como tu foto) */
-    .nrecibo{ font-weight:bold; font-size:13px; text-align:right; margin:6px 0; }
-
-    .small { font-size: 11px; }
 
     @media print { body{ margin:0; } }
   </style>
@@ -89,27 +103,27 @@
   <p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
   <p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
 
-  <!-- Línea tipo tu foto: número a la derecha (solo si toca) -->
-  <div id="nReciboBox" class="nrecibo" style="display:none;">
-    <span id="nReciboLabel">N.° Recibo:</span> <span id="nRecibo"></span>
+  <!-- Línea simple: SOLO N° Recibo (para Switch=FALSE o EsFactura=0) -->
+  <div id="nReciboLine" class="nline" style="display:none;">
+    N.° Recibo: <span id="nRecibo"></span>
   </div>
 
   <div class="sep"></div>
 
-  <!-- Bloque Factura (solo si EsFactura=1 y Vs.Switch=TRUE) -->
+  <!-- Bloque Factura (solo si EsFactura=1 y Switch=TRUE) -->
   <div id="bloqueFact" class="fact-bloque" style="display:none;">
     <div class="fact-izq" id="msgFactura"></div>
 
     <div class="fact-der">
-      <div class="track" id="trackLbl"></div>
+      <div class="recibo-lbl" id="reciboLbl"></div>
 
-      <!-- Si Vs.QrFac = TRUE => QR de Vs.WebFac -->
+      <!-- QR si Vs.QrFac=TRUE -->
       <div id="qrWrap" style="display:none;">
         <div id="qrcode" class="qr" aria-label="QR para página de factura"></div>
         <div class="scan">Escanea el QR</div>
       </div>
 
-      <!-- Si Vs.QrFac = FALSE => Barcode del TrackID -->
+      <!-- Barcode si Vs.QrFac=FALSE -->
       <div id="barWrap" class="barcode" style="display:none;">
         <svg id="barcode"></svg>
       </div>
@@ -175,7 +189,6 @@
       try{
         const el = document.querySelector(selector);
         if (!el) return;
-
         if (window.JsBarcode) {
           JsBarcode(selector, value, {
             format: "CODE128",
@@ -196,7 +209,7 @@
 
     function init(){
       // Encabezado
-      setText("empresa", qp("Empresa") || qp("TituloRecibo") || "APARKO");
+      setText("empresa", qp("Empresa") || "APARKO");
       setText("nit", qp("DatosNit"));
       setText("direccion", qp("DatosDireccion"));
       setText("horario", qp("DatosHorario"));
@@ -215,75 +228,26 @@
       // Mensaje inferior
       setText("msgSalida", qp("MensajeSalida"));
 
-      // Flags
+      // Params
       const esFactura = qp("EsFactura") === "1";
-      const tid = qp("TrackID");
-      const nroRec = qp("NRecibo");
-      const msgLegal = qp("MensajeLegal");
+      const switchOn  = isTruthy(qp("Vs.Switch"));
+      const qrFac     = isTruthy(qp("Vs.QrFac"));
+      const webFac    = qp("Vs.WebFac");
+      const msgLegal  = qp("MensajeLegal");
 
-      const switchOn = isTruthy(qp("Vs.Switch")); // ✅ NUEVO: si FALSE no muestra códigos ni bloque legal
-      const qrFac = isTruthy(qp("Vs.QrFac"));
-      const webFac = qp("Vs.WebFac");
+      const nrec = qp("NRecibo") || qp("TrackID") || "";
 
-      const bloqueFact = document.getElementById("bloqueFact");
-      const nReciboBox = document.getElementById("nReciboBox");
-      const nReciboLbl = document.getElementById("nReciboLabel");
+      const nReciboLine = document.getElementById("nReciboLine");
+      const bloqueFact  = document.getElementById("bloqueFact");
+      const qrWrap      = document.getElementById("qrWrap");
+      const barWrap     = document.getElementById("barWrap");
 
-      if (esFactura) {
-        if (!switchOn) {
-          // ✅ Vs.Switch = FALSE
-          // Como la foto: NO mostrar bloque legal, NO QR, NO barcode.
-          // Solo mostrar TRACK ID arriba en formato de línea derecha.
-          const track = tid || nroRec;
-          if (track) {
-            nReciboLbl.textContent = "TRACK ID:";
-            setText("nRecibo", "#" + track);
-            nReciboBox.style.display = "block";
-          }
-          bloqueFact.style.display = "none";
-        } else {
-          // ✅ Vs.Switch = TRUE => mostrar bloque factura con códigos
-          document.getElementById("msgFactura").textContent = msgLegal || "";
-          setText("trackLbl", tid ? "TRACK ID: #" + tid : "");
-
-          const qrWrap  = document.getElementById("qrWrap");
-          const barWrap = document.getElementById("barWrap");
-
-          // Oculta la línea simple (la de la foto) cuando está en modo factura con códigos
-          nReciboBox.style.display = "none";
-
-          if (qrFac && hasValue(webFac)) {
-            qrWrap.style.display = "block";
-            barWrap.style.display = "none";
-            safeMakeQR("qrcode", webFac, 90);
-          } else {
-            qrWrap.style.display = "none";
-            barWrap.style.display = "block";
-            safeMakeBarcode("#barcode", tid || "-");
-          }
-
-          bloqueFact.style.display = "flex";
-        }
-      } else {
-        // NO factura => recibo simple (como siempre)
-        const nro = nroRec || tid;
-        if (nro) {
-          nReciboLbl.textContent = "N.° Recibo:";
-          setText("nRecibo", nro);
-          nReciboBox.style.display = "block";
+      if (!esFactura || !switchOn) {
+        // ✅ Switch=FALSE (aunque sea factura) => SOLO N° Recibo (sin mensajeFactura, sin QR, sin barcode)
+        if (hasValue(nrec)) {
+          setText("nRecibo", nrec);
+          nReciboLine.style.display = "block";
         }
         bloqueFact.style.display = "none";
-      }
-
-      // Auto imprimir
-      setTimeout(()=>{
-        try { window.print(); } catch(e) {}
-        setTimeout(()=>{ try { window.close(); } catch(e) {} }, 600);
-      }, 350);
-    }
-
-    if (document.readyState === "complete") init();
-    else window.addEventListener("load", init);
-  </script>
-</body>
-</html>
+      } else {
+        // ✅ Switch=TRUE y EsFactura=1 => SIEMPR
