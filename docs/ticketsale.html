@@ -250,4 +250,36 @@
         }
         bloqueFact.style.display = "none";
       } else {
-        // ✅ Switch=TRUE y EsFactura=1 => SIEMPR
+        // ✅ Switch=TRUE y EsFactura=1 => SIEMPRE MensajeFactura a la izquierda + (QR o Barcode) a la derecha
+        document.getElementById("msgFactura").textContent = msgLegal || "";
+        setText("reciboLbl", hasValue(nrec) ? ("N.° Recibo: " + nrec) : "N.° Recibo:");
+
+        nReciboLine.style.display = "none";
+
+        if (qrFac && hasValue(webFac)) {
+          // Vs.QrFac=TRUE => QR a Vs.WebFac
+          qrWrap.style.display = "block";
+          barWrap.style.display = "none";
+          safeMakeQR("qrcode", webFac, 90);
+        } else {
+          // Vs.QrFac=FALSE => Barcode del N° Recibo
+          qrWrap.style.display = "none";
+          barWrap.style.display = "block";
+          safeMakeBarcode("#barcode", hasValue(nrec) ? nrec : "-");
+        }
+
+        bloqueFact.style.display = "flex";
+      }
+
+      // Auto imprimir
+      setTimeout(()=>{
+        try { window.print(); } catch(e) {}
+        setTimeout(()=>{ try { window.close(); } catch(e) {} }, 600);
+      }, 350);
+    }
+
+    if (document.readyState === "complete") init();
+    else window.addEventListener("load", init);
+  </script>
+</body>
+</html>
