@@ -23,46 +23,32 @@
       print-color-adjust: exact;
     }
 
-    @media print{
+    @media print {
       @page{
-        size: auto;
+        size: A4;
         margin: 0 !important;
       }
 
-      html, body{
-        width: 100% !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
+      body{
+        width: 210mm !important;
+        height: 297mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
       }
 
       .ticket{
         width: var(--BASE_TICKET_WIDTH);
-        padding: 0 !important;
-        margin: -5mm 0 0 0 !important;
+        padding: 0;
         transform: scale(var(--SCALE));
         transform-origin: top left;
-        display: inline-block;
       }
 
-      *{
-        box-sizing:border-box;
-        max-width:100% !important;
-      }
+      *{ box-sizing:border-box; max-width:100% !important; }
+      img, svg, canvas{ max-width:100% !important; height:auto !important; }
 
-      img, svg, canvas{
-        max-width:100% !important;
-        height:auto !important;
-      }
-
-      .fila{
-        display:block !important;
-      }
-
-      .qr-box{
-        margin-top:6px;
-      }
+      .fila{ display:block !important; }
+      .qr-box{ margin-top: 6px; }
     }
 
     .ticket{
@@ -71,21 +57,21 @@
       font-size: 12px;
     }
 
-    h1{ margin:0 0 8px 0; font-size:16px; font-weight:bold; text-align:left; }
-    p{ margin:2px 0; }
-    .info{ margin-bottom:6px; }
-    .separador{ border-top:1px solid #000; margin:6px 0; }
-    .placa-label{ margin-top:4px; font-weight:bold; }
-    .placa-grande{ font-size:28px; font-weight:bold; text-align:center; margin-top:6px; }
-    .barcode{ text-align:center; margin-top:4px; margin-bottom:8px; }
-    .titulo-bloque{ font-weight:bold; margin-top:8px; margin-bottom:4px; }
-    .fila{ display:flex; gap:8px; align-items:flex-start; }
-    .col{ flex:1; text-align:left; }
-    .qr-box{ width:120px; height:120px; display:flex; align-items:center; justify-content:center; }
-    .qr-text{ font-size:12px; }
-    .muted{ font-size:11px; line-height:1.2; }
-    .small{ font-size:11px; }
-    noscript{ display:block; margin-top:10px; font-size:12px; }
+    h1 { margin: 0 0 8px 0; font-size: 16px; font-weight: bold; text-align:left; }
+    p { margin: 2px 0; }
+    .info { margin-bottom: 6px; }
+    .separador { border-top: 1px solid #000; margin: 8px 0; }
+    .placa-label { margin-top: 4px; font-weight: bold; }
+    .placa-grande { font-size: 28px; font-weight: bold; text-align: center; margin-top: 6px; }
+    .barcode { text-align: center; margin-top: 4px; margin-bottom: 8px; }
+    .titulo-bloque { font-weight: bold; margin-top: 8px; margin-bottom: 4px; }
+    .fila { display: flex; gap: 8px; align-items: flex-start; }
+    .col { flex: 1; text-align: left; }
+    .qr-box { width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
+    .qr-text { font-size: 12px; }
+    .muted { font-size: 11px; line-height: 1.2; }
+    .small { font-size: 11px; }
+    noscript { display:block; margin-top:10px; font-size:12px; }
   </style>
 </head>
 
@@ -121,7 +107,7 @@
     <div id="qr-section" style="display:none;">
       <div class="fila">
         <div class="col" id="qr-text-list"></div>
-        <div class="qr-box" id="qrcode"></div>
+        <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
       </div>
       <div class="separador"></div>
     </div>
@@ -130,90 +116,128 @@
   </div>
 
   <script>
-    function getParams(){
-      const params={};
-      const q=location.search.startsWith("?")?location.search.slice(1):location.search;
-      q.split("&").forEach(p=>{
-        if(!p)return;
-        const[k,v]=p.split("=");
-        params[decodeURIComponent(k||"")]=decodeURIComponent((v||"").replace(/\+/g," "));
+    function getParams() {
+      const params = {};
+      const q = location.search.startsWith("?") ? location.search.slice(1) : location.search;
+      q.split("&").forEach(p => {
+        if (!p) return;
+        const [k, v] = p.split("=");
+        params[decodeURIComponent(k || "")] =
+          decodeURIComponent((v || "").replace(/\+/g, " "));
       });
       return params;
     }
-
-    function hasValue(x){
-      if(x===undefined||x===null)return false;
-      const v=String(x).trim().toLowerCase();
-      return v!==""&&v!=="null"&&v!=="undefined"&&v!=="na";
+    function hasValue(x) {
+      if (x === undefined || x === null) return false;
+      const v = String(x).trim().toLowerCase();
+      return v !== "" && v !== "null" && v !== "undefined" && v !== "na";
+    }
+    function textOrDefault(elId, v, def="") {
+      const el = document.getElementById(elId);
+      if (el) el.textContent = hasValue(v) ? v : def;
+    }
+    function isTruthy(v) {
+      if (v === undefined || v === null) return false;
+      const s = String(v).trim().toLowerCase();
+      return ["true","1","si","sí","yes","y"].includes(s);
     }
 
-    function textOrDefault(id,v,d=""){
-      const el=document.getElementById(id);
-      if(el)el.textContent=hasValue(v)?v:d;
-    }
-
-    function isTruthy(v){
-      if(v===undefined||v===null)return false;
-      return ["true","1","si","sí","yes","y"].includes(String(v).trim().toLowerCase());
-    }
-
-    function safeMakeBarcode(sel,val){
-      try{
-        if(window.JsBarcode&&document.querySelector(sel)){
-          JsBarcode(sel,val,{format:"CODE128",displayValue:true,fontSize:12,height:40,margin:0});
+    function safeMakeBarcode(selector, value) {
+      try {
+        if (window.JsBarcode && document.querySelector(selector)) {
+          JsBarcode(selector, value, {
+            format: "CODE128",
+            displayValue: true,
+            fontSize: 12,
+            height: 40,
+            margin: 0
+          });
+        } else {
+          const svg = document.querySelector(selector);
+          if (svg) svg.outerHTML = '<div class="small">' + (value || '-') + '</div>';
         }
-      }catch(e){}
+      } catch (e) {
+        const svg = document.querySelector(selector);
+        if (svg) svg.outerHTML = '<div class="small">' + (value || '-') + '</div>';
+      }
     }
 
-    function safeMakeQR(id,text){
-      try{
-        if(window.QRCode&&document.getElementById(id)){
-          new QRCode(document.getElementById(id),{text,width:120,height:120,correctLevel:QRCode.CorrectLevel.M});
+    function safeMakeQR(containerId, text) {
+      try {
+        if (window.QRCode && document.getElementById(containerId)) {
+          new QRCode(document.getElementById(containerId), {
+            text: text,
+            width: 120,
+            height: 120,
+            correctLevel: window.QRCode.CorrectLevel.M
+          });
+        } else {
+          const box = document.getElementById(containerId);
+          if (box) box.innerHTML = '<div class="small">' + (text || '') + '</div>';
         }
-      }catch(e){}
+      } catch (e) {
+        const box = document.getElementById(containerId);
+        if (box) box.innerHTML = '<div class="small">' + (text || '') + '</div>';
+      }
     }
 
-    function render(){
-      const p=getParams();
+    function render() {
+      const p = getParams();
 
-      textOrDefault("empresa",p["Ve.Name"],"APARKO");
-      textOrDefault("nit",p.DatosNit,"");
-      textOrDefault("direccion",p.DatosDireccion,"");
-      textOrDefault("horario",p.DatosHorario,"");
-      textOrDefault("polizaTop",p.DatosPoliza,"");
+      textOrDefault("empresa", p["Ve.Name"], "APARKO");
+      textOrDefault("nit", p.DatosNit, "");
+      textOrDefault("direccion", p.DatosDireccion, "");
+      textOrDefault("horario", p.DatosHorario, "");
+      textOrDefault("polizaTop", p.DatosPoliza, "");
 
-      textOrDefault("fecha",p.fecha,"");
-      textOrDefault("categoria",p.TipoPlaca,"");
-      textOrDefault("placa",p.EntradaPlaca,"-");
+      textOrDefault("fecha", p.fecha, "");
+      textOrDefault("categoria", p.TipoPlaca, "");
+      textOrDefault("placa", p.EntradaPlaca, "-");
 
-      textOrDefault("reglamento",p.VirtualReglamento,"El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.");
+      textOrDefault("reglamento", p.VirtualReglamento,
+        "El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.");
 
-      safeMakeBarcode("#barcode",hasValue(p.EntradaPlaca)?p.EntradaPlaca:"-");
+      const placaParaCodigo = hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-";
+      safeMakeBarcode("#barcode", placaParaCodigo);
 
-      const qrSection=document.getElementById("qr-section");
-      const sep=document.getElementById("sep-qr-bottom");
+      const qrSection = document.getElementById("qr-section");
+      const sepQrBottom = document.getElementById("sep-qr-bottom");
 
-      if(hasValue(p["Vs.LinkUser"])&&isTruthy(p["Ve.ValidaRecibo"])){
-        document.getElementById("qr-text-list").innerHTML=
-          "<p class='titulo-bloque'>QR GENERA PARA:</p>"+
-          "<p class='qr-text'>1. Inscripción Factura Electrónica</p>"+
-          "<p class='qr-text'>2. Condiciones del servicio</p>";
-        sep.style.display="block";
-        qrSection.style.display="block";
-        safeMakeQR("qrcode",p["Vs.LinkUser"]);
-      }else{
-        sep.style.display="none";
-        qrSection.style.display="none";
+      const tieneLinkQR  = hasValue(p["Vs.LinkUser"]);
+      const validaRecibo = isTruthy(p["Ve.ValidaRecibo"]);
+
+      if (tieneLinkQR && validaRecibo) {
+        const lista = document.getElementById("qr-text-list");
+        let html = `
+          <p class="titulo-bloque">QR GENERA PARA:</p>
+          <p class="qr-text">1. Inscripción Factura Electrónica</p>
+          <p class="qr-text">2. Conoce nuestras condiciones de prestación del servicio.</p>
+        `;
+        if (hasValue(p["Ve.FacMensaje"])) {
+          html += `<p class="qr-text">3. ${p["Ve.FacMensaje"]}</p>`;
+        }
+        lista.innerHTML = html;
+
+        if (sepQrBottom) sepQrBottom.style.display = "block";
+        qrSection.style.display = "block";
+
+        safeMakeQR("qrcode", p["Vs.LinkUser"]);
+      } else {
+        if (sepQrBottom) sepQrBottom.style.display = "none";
+        qrSection.style.display = "none";
       }
 
-      setTimeout(()=>{
-        try{window.print();}catch(e){}
-        setTimeout(()=>{try{window.close();}catch(e){}},800);
-      },500);
+      setTimeout(() => {
+        try { window.print(); } catch (e) {}
+        setTimeout(() => { try { window.close(); } catch (e) {} }, 800);
+      }, 500);
     }
 
-    if(document.readyState==="complete"){render();}
-    else{window.addEventListener("load",render);}
+    if (document.readyState === "complete") {
+      render();
+    } else {
+      window.addEventListener("load", render);
+    }
   </script>
 </body>
 </html>
