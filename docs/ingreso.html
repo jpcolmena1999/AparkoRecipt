@@ -4,34 +4,59 @@
   <meta charset="UTF-8" />
   <title>Recibo de Parqueadero - Aparko</title>
 
-  <!-- Librerías externas con defer -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
-<style>
-@media print {
-  @page {
-    size: 58mm auto;
-    margin: 0;
-  }
-  html, body {
-    width: 58mm;
-    margin: 0;
-    padding: 0;
-  }
-}
+  <style>
+    :root{
+      --SCALE: 3.0;
+      --BASE_TICKET_WIDTH: 58mm;
+    }
 
-body {
-  width: 58mm;
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  font-size: 12px;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-  background: #fff;
-  color: #000;
-}
+    html, body{
+      margin:0 !important;
+      padding:0 !important;
+      background:#fff !important;
+      color:#000;
+      font-family: Arial, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    @media print {
+      @page{
+        size: A4;
+        margin: 0 !important;
+      }
+
+      body{
+        width: 210mm !important;
+        height: 297mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
+      }
+
+      .ticket{
+        width: var(--BASE_TICKET_WIDTH);
+        padding: 0;
+        transform: scale(var(--SCALE));
+        transform-origin: top left;
+      }
+
+      *{ box-sizing:border-box; max-width:100% !important; }
+      img, svg, canvas{ max-width:100% !important; height:auto !important; }
+
+      .fila{ display:block !important; }
+      .qr-box{ margin-top: 6px; }
+    }
+
+    .ticket{
+      width: var(--BASE_TICKET_WIDTH);
+      padding: 10px;
+      font-size: 12px;
+    }
+
     h1 { margin: 0 0 8px 0; font-size: 16px; font-weight: bold; text-align:left; }
     p { margin: 2px 0; }
     .info { margin-bottom: 6px; }
@@ -46,57 +71,51 @@ body {
     .qr-text { font-size: 12px; }
     .muted { font-size: 11px; line-height: 1.2; }
     .small { font-size: 11px; }
-    /* Fallback si algo falla: que no se quede en blanco */
     noscript { display:block; margin-top:10px; font-size:12px; }
   </style>
 </head>
 
 <body>
-  <!-- ENCABEZADO -->
-  <h1 id="empresa">APARKO</h1>
-  <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
-  <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
-  <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
-  <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
+  <div class="ticket">
+    <h1 id="empresa">APARKO</h1>
+    <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
+    <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
+    <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
+    <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
 
-  <div class="separador"></div>
-
-  <!-- DATOS PRINCIPALES -->
-  <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
-  <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
-
-  <p class="placa-label">PLACA</p>
-  <div class="placa-grande" id="placa">-</div>
-
-  <div class="barcode">
-    <svg id="barcode"></svg>
-  </div>
-
-  <div class="separador"></div>
-
-  <!-- TEXTO LEGAL -->
-  <p class="titulo-bloque">REGLAMENTO:</p>
-  <p id="reglamento" class="muted">
-    El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.
-  </p>
-
-  <!-- separadora previa al QR (abajo) -->
-  <div class="separador" id="sep-qr-bottom"></div>
-
-  <!-- BLOQUE QR (CONDICIONAL) -->
-  <div id="qr-section" style="display:none;">
-    <div class="fila">
-      <div class="col" id="qr-text-list"></div>
-      <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
-    </div>
     <div class="separador"></div>
+
+    <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
+    <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
+
+    <p class="placa-label">PLACA</p>
+    <div class="placa-grande" id="placa">-</div>
+
+    <div class="barcode">
+      <svg id="barcode"></svg>
+    </div>
+
+    <div class="separador"></div>
+
+    <p class="titulo-bloque">REGLAMENTO:</p>
+    <p id="reglamento" class="muted">
+      El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.
+    </p>
+
+    <div class="separador" id="sep-qr-bottom"></div>
+
+    <div id="qr-section" style="display:none;">
+      <div class="fila">
+        <div class="col" id="qr-text-list"></div>
+        <div class="qr-box" id="qrcode" aria-label="Código QR de inscripción"></div>
+      </div>
+      <div class="separador"></div>
+    </div>
+
+    <noscript>Este recibo funciona mejor con JavaScript habilitado.</noscript>
   </div>
 
-  <noscript>Este recibo funciona mejor con JavaScript habilitado.</noscript>
-
-  <!-- === SCRIPT PRINCIPAL (al final para evitar pantalla en blanco) === -->
   <script>
-    // --- Helpers ---
     function getParams() {
       const params = {};
       const q = location.search.startsWith("?") ? location.search.slice(1) : location.search;
@@ -134,14 +153,12 @@ body {
             margin: 0
           });
         } else {
-          // Fallback: muestra la placa en texto bajo el placeholder
           const svg = document.querySelector(selector);
           if (svg) svg.outerHTML = '<div class="small">' + (value || '-') + '</div>';
         }
       } catch (e) {
         const svg = document.querySelector(selector);
         if (svg) svg.outerHTML = '<div class="small">' + (value || '-') + '</div>';
-        console.warn("Barcode error:", e);
       }
     }
 
@@ -155,41 +172,34 @@ body {
             correctLevel: window.QRCode.CorrectLevel.M
           });
         } else {
-          // Fallback: imprime la URL en texto
           const box = document.getElementById(containerId);
           if (box) box.innerHTML = '<div class="small">' + (text || '') + '</div>';
         }
       } catch (e) {
         const box = document.getElementById(containerId);
         if (box) box.innerHTML = '<div class="small">' + (text || '') + '</div>';
-        console.warn("QR error:", e);
       }
     }
 
     function render() {
       const p = getParams();
 
-      // Encabezado
       textOrDefault("empresa", p["Ve.Name"], "APARKO");
       textOrDefault("nit", p.DatosNit, "");
       textOrDefault("direccion", p.DatosDireccion, "");
       textOrDefault("horario", p.DatosHorario, "");
       textOrDefault("polizaTop", p.DatosPoliza, "");
 
-      // Datos de entrada
       textOrDefault("fecha", p.fecha, "");
       textOrDefault("categoria", p.TipoPlaca, "");
       textOrDefault("placa", p.EntradaPlaca, "-");
 
-      // Reglamento
       textOrDefault("reglamento", p.VirtualReglamento,
         "El parqueadero no responde por objetos de valor dejados dentro del vehículo. Guarde este tiquete.");
 
-      // Barcode
       const placaParaCodigo = hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-";
       safeMakeBarcode("#barcode", placaParaCodigo);
 
-      // QR al final
       const qrSection = document.getElementById("qr-section");
       const sepQrBottom = document.getElementById("sep-qr-bottom");
 
@@ -217,14 +227,12 @@ body {
         qrSection.style.display = "none";
       }
 
-      // Auto imprimir (espera a que todo esté pintado)
       setTimeout(() => {
-        try { window.print(); } catch (e) { /* ignore */ }
-        setTimeout(() => { try { window.close(); } catch (e) { /* ignore */ } }, 800);
+        try { window.print(); } catch (e) {}
+        setTimeout(() => { try { window.close(); } catch (e) {} }, 800);
       }, 500);
     }
 
-    // Espera a que todo (incluidas libs con defer) esté listo
     if (document.readyState === "complete") {
       render();
     } else {
