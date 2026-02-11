@@ -5,7 +5,6 @@
   <title>Recibo de Salida - Aparko</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
   <style>
@@ -108,13 +107,6 @@
       margin-top:3px;
     }
 
-    .barcode{
-      width:140px;
-      margin:0 auto;
-      text-align:center;
-    }
-    .barcode svg{ width:140px; height:auto; }
-
     .small{ font-size:11px; }
 
     .total-etq{ font-size:12px; font-weight:800; text-align:center; margin-top:6px; text-transform:uppercase; }
@@ -156,8 +148,9 @@
         <div class="scan">Escanea el QR</div>
       </div>
 
-      <div id="barWrap" style="display:none;">
-        <div class="barcode"><svg id="barcode"></svg></div>
+      <div id="qrWrapRec" style="display:none;">
+        <div id="qrcodeRec" class="qr"></div>
+        <div class="scan">Escanea el QR</div>
       </div>
     </div>
 
@@ -193,7 +186,7 @@
       if (el) el.textContent = val || "";
     }
 
-    function safeMakeQR(containerId, text, size){
+    function makeQR(containerId, text, size){
       const box = document.getElementById(containerId);
       if (!box) return;
       box.innerHTML = "";
@@ -210,26 +203,6 @@
         }
       } catch(e){
         box.innerHTML = '<div class="small">' + (text || "") + '</div>';
-      }
-    }
-
-    function safeMakeBarcode(selector, value){
-      const el = document.querySelector(selector);
-      if (!el) return;
-      try{
-        if (window.JsBarcode) {
-          JsBarcode(selector, value, {
-            format: "CODE128",
-            displayValue: true,
-            fontSize: 12,
-            height: 40,
-            margin: 0
-          });
-        } else {
-          el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
-        }
-      } catch(e){
-        el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
       }
     }
 
@@ -258,7 +231,7 @@
       const nReciboLine = document.getElementById("nReciboLine");
       const bloqueFact  = document.getElementById("bloqueFact");
       const qrWrap      = document.getElementById("qrWrap");
-      const barWrap     = document.getElementById("barWrap");
+      const qrWrapRec   = document.getElementById("qrWrapRec");
 
       if (!switchOn) {
         if (hasValue(nrec)) {
@@ -275,12 +248,12 @@
 
         if (qrFac && hasValue(webFac)) {
           qrWrap.style.display = "block";
-          barWrap.style.display = "none";
-          safeMakeQR("qrcode", webFac, 110);
+          qrWrapRec.style.display = "none";
+          makeQR("qrcode", webFac, 110);
         } else {
           qrWrap.style.display = "none";
-          barWrap.style.display = "block";
-          safeMakeBarcode("#barcode", hasValue(nrec) ? nrec : "-");
+          qrWrapRec.style.display = "block";
+          makeQR("qrcodeRec", hasValue(nrec) ? nrec : "-", 110);
         }
       }
 
