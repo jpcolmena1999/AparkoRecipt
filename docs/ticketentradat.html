@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Recibo de Salida - Aparko</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recibo de Parqueadero - Aparko</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
@@ -11,7 +10,7 @@
     :root{
       --SCALE: 3.0;
       --BASE_TICKET_WIDTH: 58mm;
-      --QR_SIZE: 190px;
+      --QR_SIZE: 170px;
     }
 
     html, body{
@@ -25,24 +24,21 @@
     }
 
     @media print {
-      @page{
-        size: A4;
-        margin: 0 !important;
-      }
+      @page{ size:A4; margin:0 !important; }
 
       body{
-        width: 210mm !important;
-        height: 297mm !important;
+        width:210mm !important;
+        height:297mm !important;
         margin:0 !important;
         padding:0 !important;
         overflow:hidden !important;
       }
 
       .ticket{
-        width: var(--BASE_TICKET_WIDTH);
-        padding: 0;
-        transform: scale(var(--SCALE));
-        transform-origin: top left;
+        width:var(--BASE_TICKET_WIDTH);
+        padding:0;
+        transform:scale(var(--SCALE));
+        transform-origin:top left;
       }
 
       *{ box-sizing:border-box; max-width:100% !important; }
@@ -50,81 +46,38 @@
     }
 
     .ticket{
-      width: var(--BASE_TICKET_WIDTH);
-      padding: 6px;
-      font-size: 12px;
+      width:var(--BASE_TICKET_WIDTH);
+      padding:5px;
+      font-size:11px;
+      line-height:1.1;
     }
 
     h1{
-      margin:0 0 4px 0;
-      font-size: 14px;
-      font-weight: 800;
-      text-align:left;
-      line-height: 1.05;
+      margin:0 0 2px 0;
+      font-size:13px;
+      font-weight:900;
+      line-height:1.0;
     }
 
     p{ margin:1px 0; }
-    .info{ margin-bottom:2px; }
-    .etq{ font-weight:700; }
-    #direccion{ font-weight:700; }
 
     .sep{
       border-top:1px solid #000;
-      margin:4px 0;
+      margin:3px 0;
     }
 
-    .placa{
+    .placa-label{
       font-weight:900;
-      font-size:18px;
-      margin:4px 0 2px 0;
-      letter-spacing: 0.5px;
-    }
-
-    .total-etq{
-      font-size:12px;
-      font-weight:900;
-      text-align:center;
-      margin-top:6px;
-      text-transform:uppercase;
-    }
-
-    .total-val{
-      font-size:28px;
-      font-weight:900;
-      text-align:center;
-      line-height:1.05;
       margin-top:2px;
     }
 
-    .msg-inf{
-      font-size:11px;
-      text-align:center;
-      margin-top:6px;
-      line-height: 1.25;
-    }
-
-    .track-small{
+    .placa-grande{
+      font-size:22px;
       font-weight:900;
-      font-size:13px;
       text-align:center;
-      margin:6px 0 0 0;
-    }
-
-    .track-big{
-      font-weight:900;
-      font-size:24px;
-      text-align:center;
-      margin:4px 0 2px 0;
-      letter-spacing: 1px;
-      word-break: break-all;
-    }
-
-    .msgfact{
-      font-size:11px;
-      text-align:center;
-      line-height:1.25;
-      margin:4px 0 4px 0;
-      word-break: break-word;
+      margin:3px 0;
+      letter-spacing:1px;
+      line-height:1.05;
     }
 
     .qrWrap{
@@ -132,16 +85,15 @@
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      margin:4px 0 2px 0;
+      margin:2px 0 0 0;
     }
 
     .qr{
-      width: var(--QR_SIZE);
-      height: var(--QR_SIZE);
+      width:var(--QR_SIZE);
+      height:var(--QR_SIZE);
       display:flex;
       align-items:center;
       justify-content:center;
-      margin: 0 auto;
     }
 
     .qr img, .qr canvas{
@@ -149,67 +101,32 @@
       margin:0 auto;
     }
 
-    .scan{
-      font-size:11px;
-      font-weight:900;
-      text-align:center;
-      margin-top:2px;
-    }
-
-    .poliza-top{
-      font-size:11px;
-      margin-top:2px;
-      line-height: 1.15;
-    }
-
-    .tight{ line-height: 1.12; }
-
-    noscript{ display:block; margin-top:10px; font-size:12px; }
+    .small{ font-size:10px; }
   </style>
 </head>
 
 <body>
   <div class="ticket">
     <h1 id="empresa">APARKO</h1>
-    <p class="info tight"><span class="etq">NIT:</span> <span id="nit"></span></p>
-    <p class="info tight" id="direccion"></p>
-    <p class="info tight"><span class="etq">HORARIO:</span> <span id="horario"></span></p>
-    <p class="poliza-top tight" id="poliza"></p>
+    <p><strong>NIT:</strong> <span id="nit"></span></p>
+    <p id="direccion"></p>
+    <p><strong>HORARIO:</strong> <span id="horario"></span></p>
+    <p id="polizaTop"></p>
 
     <div class="sep"></div>
 
-    <p class="tight"><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
-    <p class="tight"><span class="etq">TARIFA:</span> <span id="tipo"></span></p>
-    <p class="tight"><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
-    <p class="tight"><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
-    <p class="tight"><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
+    <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
+    <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
 
-    <div id="soloTrack" style="display:none;">
-      <div class="track-small">TRACK ID</div>
-      <div class="track-big" id="trackTxt"></div>
-    </div>
+    <p class="placa-label">PLACA</p>
+    <div class="placa-grande" id="placa">-</div>
 
-    <div id="bloqueFact" style="display:none;">
+    <div id="qr-section" style="display:none;">
       <div class="sep"></div>
-      <div class="msgfact" id="msgFactura"></div>
-      <div class="track-small">TRACK ID</div>
-      <div class="track-big" id="trackTxt2"></div>
-
       <div class="qrWrap">
-        <div id="qrcode" class="qr" aria-label="Código QR"></div>
-        <div class="scan">Escanea el QR</div>
+        <div id="qrcode" class="qr"></div>
       </div>
     </div>
-
-    <div class="sep"></div>
-
-    <div class="total-etq">Total a pagar</div>
-    <div class="total-val">$<span id="total"></span></div>
-
-    <div id="msgSalida" class="msg-inf"></div>
-    <div class="sep"></div>
-
-    <noscript>Este recibo funciona mejor con JavaScript habilitado.</noscript>
   </div>
 
   <script>
@@ -227,18 +144,9 @@
       return ["true","1","si","sí","yes","y"].includes(s);
     }
 
-    function fmtCOP(n){
-      const v = Number(String(n).replace(/[^0-9.-]/g,""));
-      return isNaN(v) ? String(n) : v.toLocaleString("es-CO");
-    }
-
     function setText(id, val){
       const el = document.getElementById(id);
       if (el) el.textContent = val || "";
-    }
-
-    function setRootVar(name, value){
-      try{ document.documentElement.style.setProperty(name, value); }catch(e){}
     }
 
     function safeMakeQR(containerId, text, size){
@@ -254,61 +162,38 @@
             correctLevel: window.QRCode.CorrectLevel.M
           });
         } else {
-          box.innerHTML = '<div style="font-size:11px;font-weight:700;text-align:center;word-break:break-all;">' + (text || "") + '</div>';
+          box.innerHTML = '<div class="small">' + (text || "") + '</div>';
         }
       } catch(e){
-        box.innerHTML = '<div style="font-size:11px;font-weight:700;text-align:center;word-break:break-all;">' + (text || "") + '</div>';
+        box.innerHTML = '<div class="small">' + (text || "") + '</div>';
       }
     }
 
     function init(){
-      setText("empresa", qp("Empresa") || "APARKO");
+      setText("empresa", qp("Ve.Name") || "APARKO");
       setText("nit", qp("DatosNit"));
       setText("direccion", qp("DatosDireccion"));
       setText("horario", qp("DatosHorario"));
-      setText("poliza", qp("DatosPoliza"));
+      setText("polizaTop", qp("DatosPoliza"));
 
-      setText("placa", qp("Placa"));
-      setText("tipo", qp("TipoPlaca"));
-      setText("fentrada", qp("EntradaFecha"));
-      setText("fsalida", qp("SalidaFecha"));
-      setText("duracion", qp("SalidaDuracion"));
+      setText("fecha", qp("fecha"));
+      setText("categoria", qp("TipoPlaca"));
+      setText("placa", qp("EntradaPlaca") || "-");
 
-      setText("total", fmtCOP(qp("SalidaValor")));
-      setText("msgSalida", qp("MensajeSalida"));
+      const linkQR = qp("Vs.LinkUser");
+      const validaQr = isTruthy(qp("Ve.ValidaQr"));
 
-      const switchOn = isTruthy(qp("Vs.Switch"));
-      const qrFac    = isTruthy(qp("Vs.QrFac"));
-      const webFac   = qp("Vs.WebFac");
-      const msgLegal = qp("MensajeLegal");
-      const trackId  = qp("TrackID");
-      const nrec     = qp("NRecibo") || trackId || "";
-
-      const soloTrack = document.getElementById("soloTrack");
-      const bloqueFact = document.getElementById("bloqueFact");
-
-      if (!switchOn) {
-        bloqueFact.style.display = "none";
-        soloTrack.style.display = hasValue(nrec) ? "block" : "none";
-        setText("trackTxt", nrec);
+      if (validaQr && hasValue(linkQR)){
+        document.getElementById("qr-section").style.display = "block";
+        safeMakeQR("qrcode", linkQR, 170);
       } else {
-        soloTrack.style.display = "none";
-        bloqueFact.style.display = "block";
-        setText("msgFactura", msgLegal || "");
-        setText("trackTxt2", nrec);
-
-        let qrText = nrec;
-        if (qrFac && hasValue(webFac)) qrText = webFac;
-
-        const qrSize = (qrFac && hasValue(webFac)) ? 170 : 190;
-        setRootVar("--QR_SIZE", qrSize + "px");
-        safeMakeQR("qrcode", qrText, qrSize);
+        document.getElementById("qr-section").style.display = "none";
       }
 
       setTimeout(()=>{
         try { window.print(); } catch(e) {}
-        setTimeout(()=>{ try { window.close(); } catch(e) {} }, 650);
-      }, 380);
+        setTimeout(()=>{ try { window.close(); } catch(e) {} }, 700);
+      }, 450);
     }
 
     if (document.readyState === "complete") init();
