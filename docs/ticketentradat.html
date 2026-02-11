@@ -8,197 +8,218 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
   <style>
-    @media print { body { width: 80mm; } }
+    :root{
+      --SCALE: 2.4;
+      --BASE_TICKET_WIDTH: 80mm;
+    }
 
-    body {
-      width: 80mm;
-      margin: 0 auto;
+    html, body{
+      margin:0 !important;
+      padding:0 !important;
+      background:#fff !important;
+      color:#000;
       font-family: Arial, sans-serif;
-      padding: 8px;
-      font-size: 13px;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
-      background: #fff;
-      color: #000;
     }
 
-    h1 { margin: 0 0 6px 0; font-size: 16px; font-weight: bold; text-align:left; }
-    p { margin: 2px 0; }
-    .info { margin-bottom: 4px; }
-    .separador { border-top: 1px solid #000; margin: 6px 0; }
-
-    .placa-label { margin-top: 4px; font-weight: bold; }
-    .placa-grande { font-size: 28px; font-weight: bold; text-align: center; margin-top: 6px; }
-
-    /* ZONA CODIGO */
-    .barcode { text-align: center; margin-top: 4px; margin-bottom: 6px; }
-
-    #qr-placa {
-      display: none;
-      width: 200px;
-      margin: 0 auto;
+    @media print{
+      @page{ size:A4; margin:0 !important; }
+      body{
+        width:210mm !important;
+        height:297mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
+      }
+      .ticket{
+        width:var(--BASE_TICKET_WIDTH);
+        padding:0;
+        transform:scale(var(--SCALE));
+        transform-origin:top left;
+      }
+      *{ box-sizing:border-box; max-width:100% !important; }
+      img, svg, canvas{ max-width:100% !important; height:auto !important; }
     }
 
-    #qr-placa img, #qr-placa canvas {
-      width: 200px !important;
-      height: 200px !important;
+    .ticket{
+      width:80mm;
+      margin:0 auto;
+      padding:8px;
+      font-size:13px;
+      line-height:1.15;
+      background:#fff;
     }
 
-    svg#barcode {
-      width: 240px !important;
-      height: 90px !important;
-    }
+    h1{ margin:0 0 6px 0; font-size:16px; font-weight:800; text-align:left; }
+    p{ margin:2px 0; }
+    .info{ margin-bottom:4px; }
+    .separador{ border-top:1px solid #000; margin:6px 0; }
 
-    /* QR WEB GRANDE */
-    .qr-web {
-      width: 100%;
-      text-align: center;
-    }
+    .placa-label{ margin-top:4px; font-weight:800; }
+    .placa-grande{ font-size:28px; font-weight:900; text-align:center; margin:6px 0 4px 0; letter-spacing:1px; }
 
-    .qr-web canvas,
-    .qr-web img {
-      width: 260px !important;
-      height: 260px !important;
-      margin: 0 auto;
-    }
+    .barcode{ text-align:center; margin-top:4px; margin-bottom:6px; }
 
-    .small { font-size: 11px; }
+    #qr-placa{ display:none; width:220px; margin:0 auto; }
+    #qr-placa img, #qr-placa canvas{ width:220px !important; height:220px !important; display:block; margin:0 auto; }
+
+    svg#barcode{ width:280px !important; height:110px !important; }
+
+    #qrcode{ width:100%; text-align:center; }
+    #qrcode img, #qrcode canvas{ width:300px !important; height:300px !important; margin:0 auto; display:block; }
+
+    .small{ font-size:11px; }
   </style>
 </head>
 
 <body>
+  <div class="ticket">
+    <h1 id="empresa">APARKO</h1>
+    <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
+    <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
+    <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
+    <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
 
-  <h1 id="empresa">APARKO</h1>
-  <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
-  <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
-  <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
-  <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
-
-  <div class="separador"></div>
-
-  <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
-  <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
-
-  <p class="placa-label">PLACA</p>
-  <div class="placa-grande" id="placa">-</div>
-
-  <!-- Barcode o QR placa -->
-  <div class="barcode">
-    <svg id="barcode"></svg>
-    <div id="qr-placa"></div>
-  </div>
-
-  <div class="separador"></div>
-
-  <!-- QR WEB -->
-  <div id="qr-section" style="display:none;">
-    <div class="qr-web" id="qrcode"></div>
     <div class="separador"></div>
+
+    <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
+    <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
+
+    <p class="placa-label">PLACA</p>
+    <div class="placa-grande" id="placa">-</div>
+
+    <div class="barcode">
+      <svg id="barcode"></svg>
+      <div id="qr-placa" aria-label="Código QR de la placa"></div>
+    </div>
+
+    <div class="separador"></div>
+
+    <div id="qr-section" style="display:none;">
+      <div id="qrcode" aria-label="Código QR de inscripción"></div>
+      <div class="separador"></div>
+    </div>
   </div>
 
-<script>
+  <script>
+    function getParams() {
+      const params = {};
+      const q = location.search.startsWith("?") ? location.search.slice(1) : location.search;
+      q.split("&").forEach(p => {
+        if (!p) return;
+        const [k, v] = p.split("=");
+        params[decodeURIComponent(k || "")] = decodeURIComponent((v || "").replace(/\+/g, " "));
+      });
+      return params;
+    }
 
-function getParams() {
-  const params = {};
-  const q = location.search.startsWith("?") ? location.search.slice(1) : location.search;
-  q.split("&").forEach(p => {
-    if (!p) return;
-    const [k, v] = p.split("=");
-    params[decodeURIComponent(k || "")] =
-      decodeURIComponent((v || "").replace(/\+/g, " "));
-  });
-  return params;
-}
+    function hasValue(x) {
+      if (x === undefined || x === null) return false;
+      const v = String(x).trim().toLowerCase();
+      return v !== "" && v !== "null" && v !== "undefined" && v !== "na";
+    }
 
-function hasValue(x) {
-  if (x === undefined || x === null) return false;
-  const v = String(x).trim().toLowerCase();
-  return v !== "" && v !== "null" && v !== "undefined" && v !== "na";
-}
+    function textOrDefault(elId, v, def="") {
+      const el = document.getElementById(elId);
+      if (el) el.textContent = hasValue(v) ? v : def;
+    }
 
-function textOrDefault(elId, v, def="") {
-  const el = document.getElementById(elId);
-  if (el) el.textContent = hasValue(v) ? v : def;
-}
+    function isTruthy(v) {
+      if (v === undefined || v === null) return false;
+      const s = String(v).trim().toLowerCase();
+      return ["true","1","si","sí","yes","y"].includes(s);
+    }
 
-function isTruthy(v) {
-  if (v === undefined || v === null) return false;
-  const s = String(v).trim().toLowerCase();
-  return ["true","1","si","sí","yes","y"].includes(s);
-}
+    function safeMakeBarcode(selector, value) {
+      try {
+        if (window.JsBarcode && document.querySelector(selector)) {
+          JsBarcode(selector, value, {
+            format: "CODE128",
+            displayValue: true,
+            fontSize: 18,
+            height: 95,
+            margin: 0
+          });
+        } else {
+          const svg = document.querySelector(selector);
+          if (svg) svg.outerHTML = '<div class="small">' + (value || '-') + '</div>';
+        }
+      } catch (e) {
+        const svg = document.querySelector(selector);
+        if (svg) svg.outerHTML = '<div class="small">' + (value || '-') + '</div>';
+      }
+    }
 
-function safeMakeBarcode(selector, value) {
-  if (!window.JsBarcode) return;
-  JsBarcode(selector, value, {
-    format: "CODE128",
-    displayValue: true,
-    fontSize: 16,
-    height: 80,
-    margin: 0
-  });
-}
+    function safeMakeQR(containerId, text, size) {
+      try {
+        const box = document.getElementById(containerId);
+        if (!box) return;
+        box.innerHTML = "";
+        if (window.QRCode) {
+          new QRCode(box, {
+            text: text,
+            width: size,
+            height: size,
+            correctLevel: window.QRCode.CorrectLevel.M
+          });
+        } else {
+          box.innerHTML = '<div class="small">' + (text || '') + '</div>';
+        }
+      } catch (e) {
+        const box = document.getElementById(containerId);
+        if (box) box.innerHTML = '<div class="small">' + (text || '') + '</div>';
+      }
+    }
 
-function safeMakeQR(containerId, text, size) {
-  const box = document.getElementById(containerId);
-  if (!box) return;
-  box.innerHTML = "";
-  if (window.QRCode) {
-    new QRCode(box, {
-      text: text,
-      width: size,
-      height: size,
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  }
-}
+    function render() {
+      const p = getParams();
 
-function render() {
-  const p = getParams();
+      textOrDefault("empresa", p["Ve.Name"], "APARKO");
+      textOrDefault("nit", p.DatosNit, "");
+      textOrDefault("direccion", p.DatosDireccion, "");
+      textOrDefault("horario", p.DatosHorario, "");
+      textOrDefault("polizaTop", p.DatosPoliza, "");
 
-  textOrDefault("empresa", p["Ve.Name"], "APARKO");
-  textOrDefault("nit", p.DatosNit, "");
-  textOrDefault("direccion", p.DatosDireccion, "");
-  textOrDefault("horario", p.DatosHorario, "");
-  textOrDefault("polizaTop", p.DatosPoliza, "");
+      textOrDefault("fecha", p.fecha, "");
+      textOrDefault("categoria", p.TipoPlaca, "");
+      textOrDefault("placa", p.EntradaPlaca, "-");
 
-  textOrDefault("fecha", p.fecha, "");
-  textOrDefault("categoria", p.TipoPlaca, "");
-  textOrDefault("placa", p.EntradaPlaca, "-");
+      const placaParaCodigo = hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-";
+      const validaQr = isTruthy(p["Ve.ValidaQr"]);
 
-  const placa = hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-";
-  const validaQr = isTruthy(p["Ve.ValidaQr"]);
+      const barcodeSvg = document.getElementById("barcode");
+      const qrPlacaBox = document.getElementById("qr-placa");
 
-  const barcodeSvg = document.getElementById("barcode");
-  const qrPlacaBox = document.getElementById("qr-placa");
+      if (validaQr) {
+        if (barcodeSvg) barcodeSvg.style.display = "block";
+        if (qrPlacaBox) qrPlacaBox.style.display = "none";
+        safeMakeBarcode("#barcode", placaParaCodigo);
+      } else {
+        if (barcodeSvg) barcodeSvg.style.display = "none";
+        if (qrPlacaBox) qrPlacaBox.style.display = "block";
+        safeMakeQR("qr-placa", placaParaCodigo, 220);
+      }
 
-  if (validaQr) {
-    barcodeSvg.style.display = "block";
-    qrPlacaBox.style.display = "none";
-    safeMakeBarcode("#barcode", placa);
-  } else {
-    barcodeSvg.style.display = "none";
-    qrPlacaBox.style.display = "block";
-    safeMakeQR("qr-placa", placa, 200);
-  }
+      const qrSection = document.getElementById("qr-section");
+      const tieneLinkQR  = hasValue(p["Vs.LinkUser"]);
+      const validaRecibo = isTruthy(p["Ve.ValidaRecibo"]);
 
-  const qrSection = document.getElementById("qr-section");
-  const tieneLinkQR  = hasValue(p["Vs.LinkUser"]);
-  const validaRecibo = isTruthy(p["Ve.ValidaRecibo"]);
+      if (tieneLinkQR && validaRecibo) {
+        qrSection.style.display = "block";
+        safeMakeQR("qrcode", p["Vs.LinkUser"], 300);
+      } else {
+        qrSection.style.display = "none";
+      }
 
-  if (tieneLinkQR && validaRecibo) {
-    qrSection.style.display = "block";
-    safeMakeQR("qrcode", p["Vs.LinkUser"], 260);
-  } else {
-    qrSection.style.display = "none";
-  }
+      setTimeout(() => {
+        try { window.print(); } catch (e) {}
+        setTimeout(() => { try { window.close(); } catch (e) {} }, 800);
+      }, 500);
+    }
 
-  setTimeout(() => {
-    window.print();
-    setTimeout(() => window.close(), 800);
-  }, 500);
-}
-
-window.addEventListener("load", render);
-</script>
+    if (document.readyState === "complete") render();
+    else window.addEventListener("load", render);
+  </script>
 </body>
 </html>
