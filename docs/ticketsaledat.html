@@ -2,16 +2,16 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Recibo de Salida - Aparko</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recibo de Parqueadero - Aparko</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
   <style>
     :root{
-      --SCALE: 3.0;
+      --SCALE: 3.6;
       --BASE_TICKET_WIDTH: 58mm;
+      --SHIFT_X: 8mm;
+      --SHIFT_Y: -4mm;
     }
 
     html, body{
@@ -26,166 +26,93 @@
 
     @media print{
       @page{
-        size: auto;
+        size: A4;
         margin: 0 !important;
       }
 
-      html, body{
-        width: 100% !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
+      body{
+        width: 210mm !important;
+        height: 297mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
       }
 
       .ticket{
         width: var(--BASE_TICKET_WIDTH);
         padding: 0 !important;
-        margin: -5mm 0 0 0 !important;
-        transform: scale(var(--SCALE));
+        margin: 0 !important;
+        transform: translate(var(--SHIFT_X), var(--SHIFT_Y)) scale(var(--SCALE));
         transform-origin: top left;
         display: inline-block;
-      }
-
-      *{
-        box-sizing:border-box;
-        max-width:100% !important;
-      }
-
-      img, svg, canvas{
-        max-width:100% !important;
-        height:auto !important;
       }
     }
 
     .ticket{
       width: var(--BASE_TICKET_WIDTH);
-      margin:0;
-      padding:6px;
-      font-size:12px;
-      background:#fff;
+      padding: 6px;
+      font-size: 12px;
     }
 
     h1{ margin:0 0 2px 0; font-size:14px; font-weight:bold; text-align:left; }
     p{ margin:1px 0; }
     .info{ margin-bottom:2px; }
-    .sep{ border-top:1px solid #000; margin:4px 0; }
+    .separador{ border-top:1px solid #000; margin:4px 0; }
+    .placa-label{ margin-top:2px; font-weight:bold; }
+    .placa-grande{ font-size:24px; font-weight:bold; text-align:center; margin-top:4px; }
 
-    .etq{ font-weight:bold; }
-    #direccion{ font-weight:bold; }
-    .placa{ font-weight:bold; font-size:18px; margin:4px 0; }
-
-    .nline{
-      font-weight:bold;
-      font-size:12px;
-      text-align:right;
-      margin:4px 0;
-    }
-
-    .fact-bloque{
+    .qr-box{
+      width:130px;
+      height:130px;
       display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:8px;
-      margin:4px 0;
-    }
-    .fact-izq{
-      flex:1;
-      min-width:0;
-      text-align:left;
-      font-size:11px;
-      line-height:1.2;
-      word-break:break-word;
-    }
-    .fact-der{
-      display:flex;
-      flex-direction:column;
       align-items:center;
-      gap:4px;
-      width:110px;
-    }
-    .recibo-lbl{
-      font-weight:bold;
-      font-size:11px;
-      text-align:center;
-      max-width:110px;
-      word-break:break-all;
+      justify-content:center;
+      margin:6px auto 2px auto;
     }
 
-    .qr{ width:80px; height:80px; display:flex; align-items:center; justify-content:center; }
-    .qr img, .qr canvas{ display:block; margin:0 auto; }
-    .scan{ font-size:10px; font-weight:bold; text-align:center; margin-top:1px; }
-
-    .barcode{ text-align:center; width:110px; }
-    .barcode svg{ width:110px; height:auto; }
+    .qr-text{ font-size:11px; text-align:center; margin:2px 0; }
+    .muted{ font-size:10px; line-height:1.15; text-align:center; margin:2px 0; }
     .small{ font-size:10px; }
-
-    .total-etq{ font-size:11px; font-weight:bold; text-align:center; margin-top:4px; text-transform:uppercase; }
-    .total-val{ font-size:22px; font-weight:800; text-align:center; line-height:1.05; margin-top:1px; }
-
-    .poliza-top{ font-size:10px; margin-top:1px; }
-    .msg-inf{ font-size:10px; text-align:center; margin-top:4px; }
-
-    @media print{
-      .ticket{ padding: 0 !important; }
-      .sep{ margin:3px 0 !important; }
-      h1{ margin-bottom:1px !important; }
-      p{ margin:0.5px 0 !important; }
-      .info{ margin-bottom:1px !important; }
-      .placa{ margin:2px 0 !important; }
-      .fact-bloque{ margin:3px 0 !important; }
-      .total-etq{ margin-top:3px !important; }
-      .msg-inf{ margin-top:3px !important; }
-    }
   </style>
 </head>
 
 <body>
   <div class="ticket">
     <h1 id="empresa">APARKO</h1>
-    <p class="info"><span class="etq">NIT:</span> <span id="nit"></span></p>
-    <p class="info" id="direccion"></p>
-    <p class="info"><span class="etq">HORARIO:</span> <span id="horario"></span></p>
-    <p class="poliza-top" id="poliza"></p>
-    <div class="sep"></div>
+    <p class="info"><strong>NIT:</strong> <span id="nit"></span></p>
+    <p class="info"><strong>DIRECCIÓN:</strong> <span id="direccion"></span></p>
+    <p class="info"><strong>HORARIO:</strong> <span id="horario"></span></p>
+    <p class="info"><strong>PÓLIZA:</strong> <span id="polizaTop"></span></p>
 
-    <p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
-    <p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>
-    <p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
-    <p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
-    <p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
+    <div class="separador"></div>
 
-    <div id="nReciboLine" class="nline" style="display:none;">
-      N.° Recibo: <span id="nRecibo"></span>
+    <p><strong>ENTRADA:</strong> <span id="fecha"></span></p>
+    <p><strong>TARIFA:</strong> <span id="categoria"></span></p>
+
+    <p class="placa-label">PLACA</p>
+    <div class="placa-grande" id="placa">-</div>
+
+    <div class="separador"></div>
+
+    <div id="qr-section" style="display:none;">
+      <div class="qr-box" id="qrcode"></div>
+      <p id="fac-mensaje" class="qr-text" style="display:none;"></p>
+      <p id="reglamento" class="muted"></p>
     </div>
-
-    <div class="sep"></div>
-
-    <div id="bloqueFact" class="fact-bloque" style="display:none;">
-      <div class="fact-izq" id="msgFactura"></div>
-      <div class="fact-der">
-        <div class="recibo-lbl" id="reciboLbl"></div>
-
-        <div id="qrWrap" style="display:none;">
-          <div id="qrcode" class="qr"></div>
-          <div class="scan">Escanea el QR</div>
-        </div>
-
-        <div id="barWrap" class="barcode" style="display:none;">
-          <svg id="barcode"></svg>
-        </div>
-      </div>
-    </div>
-
-    <div class="total-etq">Total a pagar</div>
-    <div class="total-val">$<span id="total"></span></div>
-
-    <div id="msgSalida" class="msg-inf"></div>
-    <div class="sep"></div>
   </div>
 
   <script>
-    function qp(k){ return new URLSearchParams(location.search).get(k) || ""; }
+    function getParams() {
+      const params = {};
+      const q = location.search.startsWith("?") ? location.search.slice(1) : location.search;
+      q.split("&").forEach(p => {
+        if (!p) return;
+        const [k, v] = p.split("=");
+        params[decodeURIComponent(k || "")] =
+          decodeURIComponent((v || "").replace(/\+/g, " "));
+      });
+      return params;
+    }
 
     function hasValue(x){
       if (x === undefined || x === null) return false;
@@ -199,116 +126,78 @@
       return ["true","1","si","sí","yes","y"].includes(s);
     }
 
-    function fmtCOP(n){
-      const v = Number(String(n).replace(/[^0-9.-]/g,""));
-      return isNaN(v) ? String(n) : v.toLocaleString("es-CO");
+    function textOrDefault(elId, v, def=""){
+      const el = document.getElementById(elId);
+      if (el) el.textContent = hasValue(v) ? v : def;
     }
 
-    function setText(id, val){
-      const el = document.getElementById(id);
-      if (el) el.textContent = val || "";
-    }
-
-    function safeMakeQR(containerId, text, size){
+    function safeMakeQR(containerId, text){
       const box = document.getElementById(containerId);
       if (!box) return;
       box.innerHTML = "";
       try{
-        if (window.QRCode) {
-          new QRCode(box, {
-            text: text || "",
-            width: size,
-            height: size,
-            correctLevel: window.QRCode.CorrectLevel.M
+        if(window.QRCode){
+          new QRCode(box,{
+            text:text || "",
+            width:130,
+            height:130,
+            correctLevel: QRCode.CorrectLevel.M
           });
         } else {
           box.innerHTML = '<div class="small">' + (text || "") + '</div>';
         }
-      } catch(e){
+      }catch(e){
         box.innerHTML = '<div class="small">' + (text || "") + '</div>';
       }
     }
 
-    function safeMakeBarcode(selector, value){
-      const el = document.querySelector(selector);
-      if (!el) return;
-      try{
-        if (window.JsBarcode) {
-          JsBarcode(selector, value, {
-            format: "CODE128",
-            displayValue: true,
-            fontSize: 12,
-            height: 40,
-            margin: 0
-          });
+    function render(){
+      const p = getParams();
+
+      textOrDefault("empresa", p["Ve.Name"], "APARKO");
+      textOrDefault("nit", p["DatosNit"], "");
+      textOrDefault("direccion", p["DatosDireccion"], "");
+      textOrDefault("horario", p["DatosHorario"], "");
+      textOrDefault("polizaTop", p["DatosPoliza"], "");
+
+      textOrDefault("fecha", p["fecha"], "");
+      textOrDefault("categoria", p["TipoPlaca"], "");
+      textOrDefault("placa", p["EntradaPlaca"], "-");
+
+      textOrDefault("reglamento", p["VirtualReglamento"],
+        "El parqueadero no responde por objetos de valor dejados dentro del vehículo.");
+
+      const linkQR = p["Vs.LinkUser"];
+      const validaRecibo = isTruthy(p["Ve.ValidaRecibo"]);
+      const validaQr = isTruthy(p["Ve.ValidaQr"]);
+
+      const debeMostrarQR = (validaQr || validaRecibo) && hasValue(linkQR);
+
+      if (debeMostrarQR){
+        const sec = document.getElementById("qr-section");
+        sec.style.display = "block";
+        safeMakeQR("qrcode", linkQR);
+
+        const facMsg = p["Ve.FacMensaje"];
+        const facEl = document.getElementById("fac-mensaje");
+        if (hasValue(facMsg)){
+          facEl.textContent = facMsg;
+          facEl.style.display = "block";
         } else {
-          el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
+          facEl.style.display = "none";
         }
-      } catch(e){
-        el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
-      }
-    }
-
-    function init(){
-      setText("empresa", qp("Empresa") || "APARKO");
-      setText("nit", qp("DatosNit"));
-      setText("direccion", qp("DatosDireccion"));
-      setText("horario", qp("DatosHorario"));
-      setText("poliza", qp("DatosPoliza"));
-
-      setText("placa", qp("Placa"));
-      setText("tipo", qp("TipoPlaca"));
-      setText("fentrada", qp("EntradaFecha"));
-      setText("fsalida", qp("SalidaFecha"));
-      setText("duracion", qp("SalidaDuracion"));
-
-      setText("total", fmtCOP(qp("SalidaValor")));
-      setText("msgSalida", qp("MensajeSalida"));
-
-      const switchOn = isTruthy(qp("Vs.Switch"));
-      const qrFac    = isTruthy(qp("Vs.QrFac"));
-      const webFac   = qp("Vs.WebFac");
-      const msgLegal = qp("MensajeLegal");
-      const nrec     = qp("NRecibo") || qp("TrackID") || "";
-
-      const nReciboLine = document.getElementById("nReciboLine");
-      const bloqueFact  = document.getElementById("bloqueFact");
-      const qrWrap      = document.getElementById("qrWrap");
-      const barWrap     = document.getElementById("barWrap");
-
-      if (!switchOn) {
-        if (hasValue(nrec)) {
-          setText("nRecibo", nrec);
-          nReciboLine.style.display = "block";
-        }
-        bloqueFact.style.display = "none";
       } else {
-        document.getElementById("msgFactura").textContent = msgLegal || "";
-        setText("reciboLbl", hasValue(nrec) ? ("N.° Recibo: " + nrec) : "N.° Recibo:");
-
-        nReciboLine.style.display = "none";
-
-        if (qrFac && hasValue(webFac)) {
-          qrWrap.style.display = "block";
-          barWrap.style.display = "none";
-          safeMakeQR("qrcode", webFac, 80);
-        } else {
-          qrWrap.style.display = "none";
-          barWrap.style.display = "block";
-          safeMakeBarcode("#barcode", hasValue(nrec) ? nrec : "-");
-        }
-
-        bloqueFact.style.display = "flex";
+        document.getElementById("qr-section").style.display = "none";
       }
 
       setTimeout(()=>{
-        try { window.print(); } catch(e) {}
-        setTimeout(()=>{ try { window.close(); } catch(e) {} }, 600);
-      }, 350);
+        try{ window.print(); }catch(e){}
+        setTimeout(()=>{ try{ window.close(); }catch(e){} },700);
+      },450);
     }
 
-    if (document.readyState === "complete") init();
-    else window.addEventListener("load", init);
+    if(document.readyState==="complete") render();
+    else window.addEventListener("load",render);
   </script>
 </body>
 </html>
