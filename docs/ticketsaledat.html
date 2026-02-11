@@ -5,113 +5,150 @@
   <title>Recibo de Salida - Aparko</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Barcode + QR -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
   <style>
-    @media print { body { width: 80mm; } }
+    :root{
+      --SCALE: 3.0;
+      --BASE_TICKET_WIDTH: 58mm;
+    }
 
-    body{
-      width:80mm; margin:0 auto; padding:10px;
-      font-family: Arial, sans-serif; font-size:13px; color:#000;
+    html, body{
+      margin:0 !important;
+      padding:0 !important;
+      background:#fff !important;
+      color:#000;
+      font-family: Arial, sans-serif;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
-      background:#fff;
     }
-    h1{ margin:0 0 6px 0; font-size:16px; font-weight:bold; text-align:left; }
-    p{ margin:2px 0; }
-    .info{ margin-bottom:4px; }
-    .sep{ border-top:1px solid #000; margin:8px 0; }
+
+    @media print{
+      @page{
+        size: A4;
+        margin: 0 !important;
+      }
+
+      body{
+        width: 210mm !important;
+        height: 297mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
+      }
+
+      .ticket{
+        width: var(--BASE_TICKET_WIDTH);
+        padding: 0;
+        transform: scale(var(--SCALE));
+        transform-origin: top left;
+      }
+
+      *{ box-sizing:border-box; max-width:100% !important; }
+      img, svg, canvas{ max-width:100% !important; height:auto !important; }
+    }
+
+    .ticket{
+      width: var(--BASE_TICKET_WIDTH);
+      padding: 8px;
+      font-size: 12px;
+    }
+
+    h1{ margin:0 0 2px 0; font-size:14px; font-weight:800; text-align:left; }
+    p{ margin:1px 0; }
+    .info{ margin-bottom:2px; }
+    .sep{ border-top:1px solid #000; margin:4px 0; }
 
     .etq{ font-weight:bold; }
     #direccion{ font-weight:bold; }
-    .placa{ font-weight:bold; font-size:18px; margin:6px 0; }
+    .placa{ font-weight:bold; font-size:18px; margin:3px 0; }
 
-    /* Línea simple N° Recibo (sin marco) */
     .nline{
-      font-weight:bold;
-      font-size:13px;
-      text-align:right;
-      margin:6px 0;
-    }
-
-    /* Bloque factura: izq mensaje, der código */
-    .fact-bloque{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
-      margin:8px 0;
-    }
-    .fact-izq{
-      flex:1;
-      min-width:0;
-      text-align:left;
-      font-size:12px;
-      line-height:1.3;
-      word-break:break-word;
-    }
-    .fact-der{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:6px;
-      width:120px;
-    }
-    .recibo-lbl{
-      font-weight:bold;
+      font-weight:800;
       font-size:12px;
       text-align:center;
-      max-width:120px;
+      margin:4px 0;
       word-break:break-all;
     }
 
-    /* QR */
-    .qr{ width:90px; height:90px; display:flex; align-items:center; justify-content:center; }
-    .qr img, .qr canvas{ display:block; margin:0 auto; }
-    .scan{ font-size:11px; font-weight:bold; text-align:center; margin-top:2px; }
+    .fact-bloque{
+      display:none;
+      text-align:center;
+      margin:4px 0;
+    }
 
-    /* Barcode */
-    .barcode{ text-align:center; width:120px; }
-    .barcode svg{ width:120px; height:auto; }
+    .fact-msg{
+      font-size:11px;
+      line-height:1.2;
+      word-break:break-word;
+      margin:2px 0 4px 0;
+    }
+
+    .recibo-lbl{
+      font-weight:800;
+      font-size:11px;
+      margin:2px 0 6px 0;
+      word-break:break-all;
+    }
+
+    .qr{
+      width:110px;
+      height:110px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:0 auto;
+    }
+
+    .scan{
+      font-size:11px;
+      font-weight:800;
+      text-align:center;
+      margin-top:3px;
+    }
+
+    .barcode{
+      width:140px;
+      margin:0 auto;
+      text-align:center;
+    }
+    .barcode svg{ width:140px; height:auto; }
+
     .small{ font-size:11px; }
 
-    .total-etq{ font-size:12px; font-weight:bold; text-align:center; margin-top:6px; text-transform:uppercase; }
-    .total-val{ font-size:26px; font-weight:800; text-align:center; line-height:1.1; margin-top:2px; }
+    .total-etq{ font-size:12px; font-weight:800; text-align:center; margin-top:6px; text-transform:uppercase; }
+    .total-val{ font-size:26px; font-weight:900; text-align:center; line-height:1.05; margin-top:2px; }
 
-    .poliza-top{ font-size:11px; margin-top:2px; }
-    .msg-inf{ font-size:11px; text-align:center; margin-top:8px; }
-
-    @media print { body{ margin:0; } }
+    .poliza-top{ font-size:11px; margin-top:1px; }
+    .msg-inf{ font-size:11px; text-align:center; margin-top:6px; }
   </style>
 </head>
 
 <body>
-  <h1 id="empresa">APARKO</h1>
-  <p class="info"><span class="etq">NIT:</span> <span id="nit"></span></p>
-  <p class="info" id="direccion"></p>
-  <p class="info"><span class="etq">HORARIO:</span> <span id="horario"></span></p>
-  <p class="poliza-top" id="poliza"></p>
-  <div class="sep"></div>
+  <div class="ticket">
+    <h1 id="empresa">APARKO</h1>
+    <p class="info"><span class="etq">NIT:</span> <span id="nit"></span></p>
+    <p class="info" id="direccion"></p>
+    <p class="info"><span class="etq">HORARIO:</span> <span id="horario"></span></p>
+    <p class="poliza-top" id="poliza"></p>
 
-  <p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
-  <p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>
-  <p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
-  <p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
-  <p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
+    <div class="sep"></div>
 
-  <!-- Solo N° Recibo (Switch=FALSE) -->
-  <div id="nReciboLine" class="nline" style="display:none;">
-    N.° Recibo: <span id="nRecibo"></span>
-  </div>
+    <p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
+    <p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>
+    <p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
+    <p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
+    <p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
 
-  <div class="sep"></div>
+    <div id="nReciboLine" class="nline" style="display:none;">
+      N.° Recibo: <span id="nRecibo"></span>
+    </div>
 
-  <!-- Switch=TRUE -> Mensaje izquierda + QR/Barcode derecha -->
-  <div id="bloqueFact" class="fact-bloque" style="display:none;">
-    <div class="fact-izq" id="msgFactura"></div>
-    <div class="fact-der">
+    <div class="sep"></div>
+
+    <div id="bloqueFact" class="fact-bloque">
+      <div class="fact-msg" id="msgFactura"></div>
       <div class="recibo-lbl" id="reciboLbl"></div>
 
       <div id="qrWrap" style="display:none;">
@@ -119,17 +156,17 @@
         <div class="scan">Escanea el QR</div>
       </div>
 
-      <div id="barWrap" class="barcode" style="display:none;">
-        <svg id="barcode"></svg>
+      <div id="barWrap" style="display:none;">
+        <div class="barcode"><svg id="barcode"></svg></div>
       </div>
     </div>
+
+    <div class="total-etq">Total a pagar</div>
+    <div class="total-val">$<span id="total"></span></div>
+
+    <div id="msgSalida" class="msg-inf"></div>
+    <div class="sep"></div>
   </div>
-
-  <div class="total-etq">Total a pagar</div>
-  <div class="total-val">$<span id="total"></span></div>
-
-  <div id="msgSalida" class="msg-inf"></div>
-  <div class="sep"></div>
 
   <script>
     function qp(k){ return new URLSearchParams(location.search).get(k) || ""; }
@@ -224,36 +261,33 @@
       const barWrap     = document.getElementById("barWrap");
 
       if (!switchOn) {
-        // ✅ Switch=FALSE => solo N° Recibo (sin mensaje, sin QR, sin barcode)
         if (hasValue(nrec)) {
           setText("nRecibo", nrec);
           nReciboLine.style.display = "block";
         }
         bloqueFact.style.display = "none";
       } else {
-        // ✅ Switch=TRUE => SIEMPRE mensaje izquierda + (QR si QrFac=TRUE, si no barcode del NRecibo)
         document.getElementById("msgFactura").textContent = msgLegal || "";
         setText("reciboLbl", hasValue(nrec) ? ("N.° Recibo: " + nrec) : "N.° Recibo:");
 
         nReciboLine.style.display = "none";
+        bloqueFact.style.display = "block";
 
         if (qrFac && hasValue(webFac)) {
           qrWrap.style.display = "block";
           barWrap.style.display = "none";
-          safeMakeQR("qrcode", webFac, 90);
+          safeMakeQR("qrcode", webFac, 110);
         } else {
           qrWrap.style.display = "none";
           barWrap.style.display = "block";
           safeMakeBarcode("#barcode", hasValue(nrec) ? nrec : "-");
         }
-
-        bloqueFact.style.display = "flex";
       }
 
       setTimeout(()=>{
         try { window.print(); } catch(e) {}
         setTimeout(()=>{ try { window.close(); } catch(e) {} }, 600);
-      }, 350);
+      }, 450);
     }
 
     if (document.readyState === "complete") init();
