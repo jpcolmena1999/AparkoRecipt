@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Recibo de Salida - Aparko</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+
+  <style>
+    :root{
+      --SCALE: 3.0;
+      --BASE_TICKET_WIDTH: 58mm;
+    }
+
+    html, body{
+      margin:0 !important;
+      padding:0 !important;
+      background:#fff !important;
+      color:#000;
+      font-family: Arial, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    @media print{
+      @page{
+        size: auto;
+        margin: 0 !important;
+      }
+
+      html, body{
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+      }
+
+      .ticket{
+        width: var(--BASE_TICKET_WIDTH);
+        padding: 0 !important;
+        margin: -5mm 0 0 0 !important;
+        transform: scale(var(--SCALE));
+        transform-origin: top left;
+        display: inline-block;
+      }
+
+      *{
+        box-sizing:border-box;
+        max-width:100% !important;
+      }
+
+      img, svg, canvas{
+        max-width:100% !important;
+        height:auto !important;
+      }
+    }
+
+    .ticket{
+      width: var(--BASE_TICKET_WIDTH);
+      margin:0;
+      padding:6px;
+      font-size:12px;
+      background:#fff;
+    }
+
+    h1{ margin:0 0 2px 0; font-size:14px; font-weight:bold; text-align:left; }
+    p{ margin:1px 0; }
+    .info{ margin-bottom:2px; }
+    .sep{ border-top:1px solid #000; margin:4px 0; }
+
+    .etq{ font-weight:bold; }
+    #direccion{ font-weight:bold; }
+    .placa{ font-weight:bold; font-size:18px; margin:4px 0; }
+
+    .nline{
+      font-weight:bold;
+      font-size:12px;
+      text-align:right;
+      margin:4px 0;
+    }
+
+    .fact-bloque{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:8px;
+      margin:4px 0;
+    }
+    .fact-izq{
+      flex:1;
+      min-width:0;
+      text-align:left;
+      font-size:11px;
+      line-height:1.2;
+      word-break:break-word;
+    }
+    .fact-der{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      width:110px;
+    }
+    .recibo-lbl{
+      font-weight:bold;
+      font-size:11px;
+      text-align:center;
+      max-width:110px;
+      word-break:break-all;
+    }
+
+    .qr{ width:80px; height:80px; display:flex; align-items:center; justify-content:center; }
+    .qr img, .qr canvas{ display:block; margin:0 auto; }
+    .scan{ font-size:10px; font-weight:bold; text-align:center; margin-top:1px; }
+
+    .barcode{ text-align:center; width:110px; }
+    .barcode svg{ width:110px; height:auto; }
+    .small{ font-size:10px; }
+
+    .total-etq{ font-size:11px; font-weight:bold; text-align:center; margin-top:4px; text-transform:uppercase; }
+    .total-val{ font-size:22px; font-weight:800; text-align:center; line-height:1.05; margin-top:1px; }
+
+    .poliza-top{ font-size:10px; margin-top:1px; }
+    .msg-inf{ font-size:10px; text-align:center; margin-top:4px; }
+
+    @media print{
+      .ticket{ padding: 0 !important; }
+      .sep{ margin:3px 0 !important; }
+      h1{ margin-bottom:1px !important; }
+      p{ margin:0.5px 0 !important; }
+      .info{ margin-bottom:1px !important; }
+      .placa{ margin:2px 0 !important; }
+      .fact-bloque{ margin:3px 0 !important; }
+      .total-etq{ margin-top:3px !important; }
+      .msg-inf{ margin-top:3px !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ticket">
+    <h1 id="empresa">APARKO</h1>
+    <p class="info"><span class="etq">NIT:</span> <span id="nit"></span></p>
+    <p class="info" id="direccion"></p>
+    <p class="info"><span class="etq">HORARIO:</span> <span id="horario"></span></p>
+    <p class="poliza-top" id="poliza"></p>
+    <div class="sep"></div>
+
+    <p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
+    <p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>
+    <p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
+    <p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
+    <p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
+
+    <div id="nReciboLine" class="nline" style="display:none;">
+      N.° Recibo: <span id="nRecibo"></span>
+    </div>
+
+    <div class="sep"></div>
+
+    <div id="bloqueFact" class="fact-bloque" style="display:none;">
+      <div class="fact-izq" id="msgFactura"></div>
+      <div class="fact-der">
+        <div class="recibo-lbl" id="reciboLbl"></div>
+
+        <div id="qrWrap" style="display:none;">
+          <div id="qrcode" class="qr"></div>
+          <div class="scan">Escanea el QR</div>
+        </div>
+
+        <div id="barWrap" class="barcode" style="display:none;">
+          <svg id="barcode"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="total-etq">Total a pagar</div>
+    <div class="total-val">$<span id="total"></span></div>
+
+    <div id="msgSalida" class="msg-inf"></div>
+    <div class="sep"></div>
+  </div>
+
+  <script>
+    function qp(k){ return new URLSearchParams(location.search).get(k) || ""; }
+
+    function hasValue(x){
+      if (x === undefined || x === null) return false;
+      const v = String(x).trim().toLowerCase();
+      return v !== "" && v !== "null" && v !== "undefined" && v !== "na";
+    }
+
+    function isTruthy(v){
+      if (v === undefined || v === null) return false;
+      const s = String(v).trim().toLowerCase();
+      return ["true","1","si","sí","yes","y"].includes(s);
+    }
+
+    function fmtCOP(n){
+      const v = Number(String(n).replace(/[^0-9.-]/g,""));
+      return isNaN(v) ? String(n) : v.toLocaleString("es-CO");
+    }
+
+    function setText(id, val){
+      const el = document.getElementById(id);
+      if (el) el.textContent = val || "";
+    }
+
+    function safeMakeQR(containerId, text, size){
+      const box = document.getElementById(containerId);
+      if (!box) return;
+      box.innerHTML = "";
+      try{
+        if (window.QRCode) {
+          new QRCode(box, {
+            text: text || "",
+            width: size,
+            height: size,
+            correctLevel: window.QRCode.CorrectLevel.M
+          });
+        } else {
+          box.innerHTML = '<div class="small">' + (text || "") + '</div>';
+        }
+      } catch(e){
+        box.innerHTML = '<div class="small">' + (text || "") + '</div>';
+      }
+    }
+
+    function safeMakeBarcode(selector, value){
+      const el = document.querySelector(selector);
+      if (!el) return;
+      try{
+        if (window.JsBarcode) {
+          JsBarcode(selector, value, {
+            format: "CODE128",
+            displayValue: true,
+            fontSize: 12,
+            height: 40,
+            margin: 0
+          });
+        } else {
+          el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
+        }
+      } catch(e){
+        el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
+      }
+    }
+
+    function init(){
+      setText("empresa", qp("Empresa") || "APARKO");
+      setText("nit", qp("DatosNit"));
+      setText("direccion", qp("DatosDireccion"));
+      setText("horario", qp("DatosHorario"));
+      setText("poliza", qp("DatosPoliza"));
+
+      setText("placa", qp("Placa"));
+      setText("tipo", qp("TipoPlaca"));
+      setText("fentrada", qp("EntradaFecha"));
+      setText("fsalida", qp("SalidaFecha"));
+      setText("duracion", qp("SalidaDuracion"));
+
+      setText("total", fmtCOP(qp("SalidaValor")));
+      setText("msgSalida", qp("MensajeSalida"));
+
+      const switchOn = isTruthy(qp("Vs.Switch"));
+      const qrFac    = isTruthy(qp("Vs.QrFac"));
+      const webFac   = qp("Vs.WebFac");
+      const msgLegal = qp("MensajeLegal");
+      const nrec     = qp("NRecibo") || qp("TrackID") || "";
+
+      const nReciboLine = document.getElementById("nReciboLine");
+      const bloqueFact  = document.getElementById("bloqueFact");
+      const qrWrap      = document.getElementById("qrWrap");
+      const barWrap     = document.getElementById("barWrap");
+
+      if (!switchOn) {
+        if (hasValue(nrec)) {
+          setText("nRecibo", nrec);
+          nReciboLine.style.display = "block";
+        }
+        bloqueFact.style.display = "none";
+      } else {
+        document.getElementById("msgFactura").textContent = msgLegal || "";
+        setText("reciboLbl", hasValue(nrec) ? ("N.° Recibo: " + nrec) : "N.° Recibo:");
+
+        nReciboLine.style.display = "none";
+
+        if (qrFac && hasValue(webFac)) {
+          qrWrap.style.display = "block";
+          barWrap.style.display = "none";
+          safeMakeQR("qrcode", webFac, 80);
+        } else {
+          qrWrap.style.display = "none";
+          barWrap.style.display = "block";
+          safeMakeBarcode("#barcode", hasValue(nrec) ? nrec : "-");
+        }
+
+        bloqueFact.style.display = "flex";
+      }
+
+      setTimeout(()=>{
+        try { window.print(); } catch(e) {}
+        setTimeout(()=>{ try { window.close(); } catch(e) {} }, 600);
+      }, 350);
+    }
+
+    if (document.readyState === "complete") init();
+    else window.addEventListener("load", init);
+  </script>
+</body>
+</html>
