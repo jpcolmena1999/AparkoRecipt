@@ -96,7 +96,7 @@
       margin:0 auto;
     }
 
-    /* BARCODE largo y bajito */
+    /* BARCODE AJUSTADO: más largo y bajito */
     #barcode{
       width:380px!important;
       height:70px!important;
@@ -169,7 +169,6 @@
       return ["true","1","si","sí","yes","y"].includes(s);
     }
 
-    /* BARCODE con líneas más delgadas */
     function safeMakeBarcode(selector, value) {
       const el = document.querySelector(selector);
       if (!el) return;
@@ -178,9 +177,9 @@
           JsBarcode(selector, value, {
             format: "CODE128",
             displayValue: true,
-            fontSize: 14,
-            height: 65,
-            width: 1.6,   // 👈 líneas más delgadas
+            fontSize: 16,
+            height: 70,
+            width: 2.4,   // líneas más separadas para mejor lectura
             margin: 0
           });
         } else {
