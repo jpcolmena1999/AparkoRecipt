@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <title>Recibo de Salida - Aparko</title>
 
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
 <style>
@@ -13,33 +14,38 @@
 }
 
 html,body{
-  margin:0 !important;
-  padding:0 !important;
-  background:#fff !important;
-  font-family: Arial, sans-serif;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
+  margin:0!important;
+  padding:0!important;
+  background:#fff!important;
+  color:#000;
+  font-family:Arial,sans-serif;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
 }
 
 @media print{
-  @page{ size:A4; margin:0 !important; }
+  @page{
+    size:A4;
+    margin:0!important;
+  }
 
   body{
-    width:210mm !important;
-    height:297mm !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
+    width:210mm!important;
+    height:297mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
   }
 
   .ticket{
     width:var(--BASE_TICKET_WIDTH);
+    padding:0;
     transform:scale(var(--SCALE));
     transform-origin:top left;
   }
 
-  *{ box-sizing:border-box; max-width:100% !important; }
-  img,svg,canvas{ max-width:100% !important; height:auto !important; }
+  *{box-sizing:border-box;max-width:100%!important;}
+  img,svg,canvas{max-width:100%!important;height:auto!important;}
 }
 
 .ticket{
@@ -48,110 +54,112 @@ html,body{
   font-size:12px;
 }
 
-h1{ margin:0 0 4px 0; font-size:15px; font-weight:bold; }
-p{ margin:2px 0; }
+h1{margin:0 0 4px 0;font-size:15px;font-weight:bold;}
+p{margin:2px 0;}
+.sep{border-top:1px solid #000;margin:6px 0;}
 
-.sep{ border-top:1px solid #000; margin:6px 0; }
-
-.placa{
-  font-size:22px;
-  font-weight:bold;
-  margin:4px 0;
-}
+.etq{font-weight:bold;}
+.placa{font-weight:bold;font-size:18px;}
 
 .track{
-  font-size:24px;
-  font-weight:bold;
+  font-size:26px;
+  font-weight:800;
   text-align:center;
-  margin:6px 0;
+  margin:8px 0 4px 0;
 }
 
-.msg{
+.msgfact{
   font-size:12px;
   text-align:center;
+  margin:6px 0;
   line-height:1.3;
-  margin:8px 0;
 }
 
-.qr-big{
-  width:100%;
+.qrwrap{
   display:flex;
   justify-content:center;
+  align-items:center;
   margin:6px 0;
 }
 
-.qr-big canvas{
-  width:100% !important;
-  height:auto !important;
+.qr{
+  width:260px;
+  height:260px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-.total-label{
-  text-align:center;
-  font-weight:bold;
+.total-etq{
   font-size:12px;
+  font-weight:bold;
+  text-align:center;
   margin-top:6px;
 }
 
-.total{
+.total-val{
+  font-size:26px;
+  font-weight:800;
   text-align:center;
-  font-size:28px;
-  font-weight:900;
   margin-top:2px;
 }
 
-.footer{
-  text-align:center;
+.msg-inf{
   font-size:11px;
+  text-align:center;
   margin-top:8px;
 }
 </style>
 </head>
 
 <body>
-
 <div class="ticket">
 
 <h1 id="empresa">APARKO</h1>
-<p><strong>NIT:</strong> <span id="nit"></span></p>
+<p><span class="etq">NIT:</span> <span id="nit"></span></p>
 <p id="direccion"></p>
-<p><strong>HORARIO:</strong> <span id="horario"></span></p>
+<p><span class="etq">HORARIO:</span> <span id="horario"></span></p>
 <p id="poliza"></p>
 
 <div class="sep"></div>
 
-<p><strong>PLACA:</strong></p>
-<div class="placa" id="placa"></div>
-
-<p><strong>TARIFA:</strong> <span id="tipo"></span></p>
-<p><strong>ENTRADA:</strong> <span id="fentrada"></span></p>
-<p><strong>SALIDA:</strong> <span id="fsalida"></span></p>
-<p><strong>DURACIÓN:</strong> <span id="duracion"></span></p>
+<p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
+<p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>
+<p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
+<p><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
+<p><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
 
 <div class="sep"></div>
 
-<div class="track" id="trackid"></div>
+<div id="msgFactura" class="msgfact"></div>
 
-<div class="msg" id="msgFactura"></div>
+<div id="trackid" class="track"></div>
 
-<div class="qr-big">
-  <div id="qrcode"></div>
+<div class="qrwrap">
+  <div id="qrcode" class="qr"></div>
 </div>
 
-<div class="total-label">TOTAL A PAGAR</div>
-<div class="total">$<span id="total"></span></div>
+<div class="total-etq">TOTAL A PAGAR</div>
+<div class="total-val">$<span id="total"></span></div>
 
-<div class="footer" id="msgSalida"></div>
+<div id="msgSalida" class="msg-inf"></div>
 
 <div class="sep"></div>
 
 </div>
 
 <script>
-function qp(k){ return new URLSearchParams(location.search).get(k) || ""; }
+function qp(k){ return new URLSearchParams(location.search).get(k)||""; }
+
+function isTruthy(v){
+  if(v===undefined||v===null) return false;
+  const s=String(v).trim().toLowerCase();
+  return ["true","1","si","sí","yes","y"].includes(s);
+}
 
 function fmtCOP(n){
-  const v = Number(String(n).replace(/[^0-9.-]/g,""));
-  return isNaN(v) ? String(n) : v.toLocaleString("es-CO");
+  const v=Number(String(n).replace(/[^0-9.-]/g,""));
+  return isNaN(v)?String(n):v.toLocaleString("es-CO");
 }
 
 function setText(id,val){
@@ -172,7 +180,7 @@ function makeQR(text){
 
 function init(){
 
-  setText("empresa", qp("Empresa") || "APARKO");
+  setText("empresa", qp("Empresa")||"APARKO");
   setText("nit", qp("DatosNit"));
   setText("direccion", qp("DatosDireccion"));
   setText("horario", qp("DatosHorario"));
@@ -186,15 +194,18 @@ function init(){
 
   setText("total", fmtCOP(qp("SalidaValor")));
   setText("msgSalida", qp("MensajeSalida"));
+  setText("msgFactura", qp("MensajeLegal"));
 
   const track = qp("TrackID") || qp("NRecibo") || "";
   setText("trackid","Track ID: "+track);
 
-  const msgLegal = qp("MensajeLegal");
-  setText("msgFactura", msgLegal);
+  const qrFac = isTruthy(qp("Vs.QrFac"));
+  const webFac = (qp("Vs.WebFac")||"").trim();
+  const webIsUrl = /^https?:\/\//i.test(webFac);
 
-  const webFac = qp("Vs.WebFac");
-  makeQR(webFac || track);
+  const qrText = (qrFac && webIsUrl) ? webFac : track;
+
+  makeQR(qrText);
 
   setTimeout(()=>{
     try{window.print();}catch(e){}
