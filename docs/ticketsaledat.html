@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8" />
-<title>Recibo de Entrada - Aparko</title>
+<title>Recibo de Salida - Aparko</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
 <style>
+
 :root{
   --SCALE: 3.0;
   --BASE_TICKET_WIDTH: 58mm;
@@ -23,7 +25,11 @@ html,body{
 }
 
 @media print{
-  @page{ size:A4; margin:0!important; }
+
+  @page{
+    size:A4;
+    margin:0!important;
+  }
 
   body{
     width:210mm!important;
@@ -40,8 +46,16 @@ html,body{
     transform-origin:top left;
   }
 
-  *{box-sizing:border-box;max-width:100%!important;}
-  img,svg,canvas{max-width:100%!important;height:auto!important;}
+  *{
+    box-sizing:border-box;
+    max-width:100%!important;
+  }
+
+  img,svg,canvas{
+    max-width:100%!important;
+    height:auto!important;
+  }
+
 }
 
 .ticket{
@@ -50,12 +64,29 @@ html,body{
   font-size:12px;
 }
 
-h1{margin:0 0 4px 0;font-size:15px;font-weight:bold;}
-p{margin:2px 0;}
-.sep{border-top:1px solid #000;margin:6px 0;}
+h1{
+  margin:0 0 4px 0;
+  font-size:15px;
+  font-weight:bold;
+}
 
-.etq{font-weight:bold;}
-.placa{font-weight:bold;font-size:18px;}
+p{
+  margin:2px 0;
+}
+
+.sep{
+  border-top:1px solid #000;
+  margin:6px 0;
+}
+
+.etq{
+  font-weight:bold;
+}
+
+.placa{
+  font-weight:bold;
+  font-size:18px;
+}
 
 .msgfact{
   font-size:12px;
@@ -94,7 +125,6 @@ p{margin:2px 0;}
   justify-content:center;
 }
 
-/* En entrada no siempre hay total; lo dejamos pero puedes ocultarlo si quieres */
 .total-etq{
   font-size:12px;
   font-weight:bold;
@@ -114,57 +144,82 @@ p{margin:2px 0;}
   font-size:11px;
   text-align:center;
   margin-top:8px;
-  line-height:1.25;
-  white-space:pre-wrap; /* ✅ respeta saltos de línea del mensaje */
 }
+
 </style>
 </head>
 
 <body>
+
 <div class="ticket">
 
-<!-- ✅ Empresa viene como Ve.Name -->
 <h1 id="empresa">APARKO</h1>
-<p><span class="etq">NIT:</span> <span id="nit"></span></p>
+
+<p>
+  <span class="etq">NIT:</span>
+  <span id="nit"></span>
+</p>
+
 <p id="direccion"></p>
-<p><span class="etq">HORARIO:</span> <span id="horario"></span></p>
+
+<p>
+  <span class="etq">HORARIO:</span>
+  <span id="horario"></span>
+</p>
+
 <p id="poliza"></p>
 
 <div class="sep"></div>
 
-<!-- ✅ Placa viene como EntradaPlaca -->
-<p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
-<p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>
+<p>
+  <span class="etq">PLACA:</span>
+  <span class="placa" id="placa"></span>
+</p>
 
-<!-- ✅ Fecha de entrada viene como fecha -->
-<p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
+<p>
+  <span class="etq">TARIFA:</span>
+  <span id="tipo"></span>
+</p>
 
-<!-- En ticket de entrada estas suelen venir vacías -->
-<p style="display:none;"><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
-<p style="display:none;"><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
+<p>
+  <span class="etq">ENTRADA:</span>
+  <span id="fentrada"></span>
+</p>
+
+<p>
+  <span class="etq">SALIDA:</span>
+  <span id="fsalida"></span>
+</p>
+
+<p>
+  <span class="etq">DURACIÓN:</span>
+  <span id="duracion"></span>
+</p>
 
 <div class="sep"></div>
 
-<!-- En entrada NO usamos bloque de factura; lo ocultamos -->
 <div id="bloqueFactura" style="display:none;">
+
   <div id="msgFactura" class="msgfact"></div>
+
   <div id="trackBig" class="track-big"></div>
+
   <div class="qrwrap">
     <div id="qrcode" class="qr"></div>
   </div>
+
 </div>
 
 <div id="bloqueSimple" style="display:none;">
   <div id="trackSmall" class="track-small"></div>
 </div>
 
-<!-- Si no mandas total, se puede ocultar automático -->
-<div id="bloqueTotal">
-  <div class="total-etq">TOTAL A PAGAR</div>
-  <div class="total-val">$<span id="total"></span></div>
+<div class="total-etq">TOTAL A PAGAR</div>
+
+<div class="total-val">
+  $<span id="total"></span>
 </div>
 
-<!-- ✅ MENSAJE QUE QUIERES: Ve.FacMensaje -->
 <div id="msgSalida" class="msg-inf"></div>
 
 <div class="sep"></div>
@@ -172,96 +227,123 @@ p{margin:2px 0;}
 </div>
 
 <script>
-function qp(k){ return new URLSearchParams(location.search).get(k)||""; }
+
+function qp(k){
+  return new URLSearchParams(location.search).get(k)||"";
+}
 
 function isTruthy(v){
+
   if(v===undefined||v===null) return false;
+
   const s=String(v).trim().toLowerCase();
+
   return ["true","1","si","sí","yes","y"].includes(s);
+
 }
 
 function fmtCOP(n){
+
   const v=Number(String(n).replace(/[^0-9.-]/g,""));
-  return isNaN(v)?String(n):v.toLocaleString("es-CO");
+
+  return isNaN(v) ? String(n) : v.toLocaleString("es-CO");
+
 }
 
 function setText(id,val){
+
   const el=document.getElementById(id);
+
   if(el) el.textContent=val||"";
+
+}
+
+function makeQR(text){
+
+  const box=document.getElementById("qrcode");
+
+  if(!box) return;
+
+  box.innerHTML="";
+
+  new QRCode(box,{
+    text:text||"",
+    width:260,
+    height:260,
+    correctLevel:QRCode.CorrectLevel.M
+  });
+
 }
 
 function init(){
-  // ✅ AppSheet manda: Ve.Name
-  setText("empresa", qp("Ve.Name") || "APARKO");
 
-  // ✅ AppSheet manda: DatosNit, DatosDireccion, DatosHorario, DatosPoliza
+  setText("empresa", qp("Empresa")||"APARKO");
   setText("nit", qp("DatosNit"));
   setText("direccion", qp("DatosDireccion"));
   setText("horario", qp("DatosHorario"));
   setText("poliza", qp("DatosPoliza"));
 
-  // ✅ AppSheet manda: EntradaPlaca, TipoPlaca, fecha
-  setText("placa", qp("EntradaPlaca"));
+  setText("placa", qp("Placa"));
   setText("tipo", qp("TipoPlaca"));
-  setText("fentrada", qp("fecha"));
+  setText("fentrada", qp("EntradaFecha"));
+  setText("fsalida", qp("SalidaFecha"));
+  setText("duracion", qp("SalidaDuracion"));
 
-  // ✅ Mensaje inferior: Ve.FacMensaje
-  setText("msgSalida", qp("Ve.FacMensaje"));
+  setText("total", fmtCOP(qp("SalidaValor")));
+  setText("msgSalida", qp("MensajeSalida"));
 
-  // ✅ Si NO hay total en entrada, ocultamos el bloque
-  const totalRaw = qp("SalidaValor") || qp("total") || "";
-  const bloqueTotal = document.getElementById("bloqueTotal");
-  if(!totalRaw){
-    if(bloqueTotal) bloqueTotal.style.display = "none";
-  }else{
-    setText("total", fmtCOP(totalRaw));
-  }
+  const switchOn = isTruthy(qp("Vs.Switch"));
 
-  // ✅ Si quieres usar Validaciones para mostrar/ocultar el QR o track en entrada:
-  // Ve.ValidaRecibo / Ve.ValidaQr (vienen como "TRUE/FALSE" o "true/false")
-  const validaQr = isTruthy(qp("Ve.ValidaQr"));
-  const validaRecibo = isTruthy(qp("Ve.ValidaRecibo"));
-
-  // Si quieres mostrar un QR con el link del usuario (Vs.LinkUser) cuando validaQr=TRUE:
-  const linkUser = (qp("Vs.LinkUser")||"").trim();
+  const track = qp("TrackID") || qp("NRecibo") || "";
 
   const bloqueFactura = document.getElementById("bloqueFactura");
   const bloqueSimple  = document.getElementById("bloqueSimple");
 
-  if(validaQr && linkUser){
-    // mostramos un QR simple abajo (usamos bloqueFactura como contenedor)
+  if(!switchOn){
+
+    bloqueFactura.style.display = "none";
+    bloqueSimple.style.display  = "block";
+
+    setText("trackSmall", track ? ("Track ID: " + track) : "");
+
+  }
+  else{
+
     bloqueSimple.style.display  = "none";
     bloqueFactura.style.display = "block";
 
-    // mensaje arriba del QR (puedes cambiarlo)
-    setText("msgFactura", "Escanea para ver tu recibo / información");
-    setText("trackBig", " ");
+    setText("msgFactura", qp("MensajeLegal"));
+    setText("trackBig", track ? ("Track ID: " + track) : "Track ID:");
 
-    // crear QR
-    const box=document.getElementById("qrcode");
-    if(box){
-      box.innerHTML="";
-      new QRCode(box,{
-        text: linkUser,
-        width:260,
-        height:260,
-        correctLevel:QRCode.CorrectLevel.M
-      });
-    }
-  }else{
-    // si no hay QR, ocultamos todo ese bloque
-    bloqueFactura.style.display = "none";
-    bloqueSimple.style.display  = "none";
+    const qrFac = isTruthy(qp("Vs.QrFac"));
+
+    const webFac = (qp("Vs.WebFac")||"").trim();
+
+    const webIsUrl = /^https?:\/\//i.test(webFac);
+
+    const qrText = (qrFac && webIsUrl) ? webFac : track;
+
+    makeQR(qrText);
+
   }
 
   setTimeout(()=>{
+
     try{window.print();}catch(e){}
-    setTimeout(()=>{try{window.close();}catch(e){}},600);
+
+    setTimeout(()=>{
+      try{window.close();}catch(e){}
+    },600);
+
   },400);
+
 }
 
-if(document.readyState==="complete") init();
-else window.addEventListener("load",init);
+if(document.readyState==="complete")
+  init();
+else
+  window.addEventListener("load",init);
+
 </script>
 
 </body>
