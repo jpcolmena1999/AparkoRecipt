@@ -1,268 +1,264 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Recibo de Entrada - Aparko</title>
+  <meta charset="UTF-8" />
+  <title>Recibo de Parqueadero - Aparko</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
-<style>
-:root{
-  --SCALE: 3.0;
-  --BASE_TICKET_WIDTH: 58mm;
-}
+  <style>
+    :root{
+      --SCALE: 3.0;
+      --BASE_TICKET_WIDTH: 58mm;
+    }
 
-html,body{
-  margin:0!important;
-  padding:0!important;
-  background:#fff!important;
-  color:#000;
-  font-family:Arial,sans-serif;
-  -webkit-print-color-adjust:exact;
-  print-color-adjust:exact;
-}
+    html,body{
+      margin:0!important;
+      padding:0!important;
+      background:#fff!important;
+      color:#000;
+      font-family:Arial,sans-serif;
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
+    }
 
-@media print{
-  @page{ size:A4; margin:0!important; }
+    @media print{
+      @page{ size:A4; margin:0!important; }
 
-  body{
-    width:210mm!important;
-    height:297mm!important;
-    margin:0!important;
-    padding:0!important;
-    overflow:hidden!important;
-  }
+      body{
+        width:210mm!important;
+        height:297mm!important;
+        margin:0!important;
+        padding:0!important;
+        overflow:hidden!important;
+      }
 
-  .ticket{
-    width:var(--BASE_TICKET_WIDTH);
-    padding:0;
-    transform:scale(var(--SCALE));
-    transform-origin:top left;
-  }
+      .ticket{
+        width:var(--BASE_TICKET_WIDTH);
+        padding:0;
+        transform:scale(var(--SCALE));
+        transform-origin:top left;
+      }
 
-  *{box-sizing:border-box;max-width:100%!important;}
-  img,svg,canvas{max-width:100%!important;height:auto!important;}
-}
+      *{box-sizing:border-box;max-width:100%!important;}
+      img,svg,canvas{max-width:100%!important;height:auto!important;}
+    }
 
-.ticket{
-  width:var(--BASE_TICKET_WIDTH);
-  padding:8px;
-  font-size:12px;
-}
+    .ticket{
+      width:var(--BASE_TICKET_WIDTH);
+      padding:6px;
+      font-size:12px;
+    }
 
-h1{margin:0 0 4px 0;font-size:15px;font-weight:bold;}
-p{margin:2px 0;}
-.sep{border-top:1px solid #000;margin:6px 0;}
+    h1{margin:0 0 4px 0;font-size:15px;font-weight:bold;}
+    p{margin:2px 0;}
+    .sep{border-top:1px solid #000;margin:6px 0;}
 
-.etq{font-weight:bold;}
-.placa{font-weight:bold;font-size:18px;}
+    .etq{font-weight:bold;}
 
-.msgfact{
-  font-size:12px;
-  text-align:center;
-  margin:6px 0;
-  line-height:1.3;
-}
+    .placa-label{font-weight:bold;margin-top:4px;}
+    .placa-grande{
+      font-size:28px;
+      font-weight:900;
+      text-align:center;
+      margin:6px 0 4px 0;
+      letter-spacing:1px;
+      line-height:1.05;
+    }
 
-.track-big{
-  font-size:26px;
-  font-weight:800;
-  text-align:center;
-  margin:8px 0 4px 0;
-}
+    .codewrap{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin:6px 0;
+    }
 
-.track-small{
-  font-size:12px;
-  font-weight:800;
-  text-align:center;
-  margin:4px 0;
-  word-break:break-all;
-}
+    .qrPlaca{
+      width:131px;
+      height:131px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
-.qrwrap{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  margin:6px 0;
-}
+    .qrWeb{
+      width:260px;
+      height:260px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
-.qr{
-  width:260px;
-  height:260px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+    #qr-placa img, #qr-placa canvas,
+    #qrcode img, #qrcode canvas{
+      display:block;
+      margin:0 auto;
+    }
 
-/* En entrada no siempre hay total; lo dejamos pero puedes ocultarlo si quieres */
-.total-etq{
-  font-size:12px;
-  font-weight:bold;
-  text-align:center;
-  margin-top:6px;
-}
+    /* BARCODE largo y bajito */
+    #barcode{
+      width:380px!important;
+      height:70px!important;
+    }
 
-.total-val{
-  font-size:34px;
-  font-weight:900;
-  text-align:center;
-  margin-top:2px;
-  line-height:1.05;
-}
-
-.msg-inf{
-  font-size:11px;
-  text-align:center;
-  margin-top:8px;
-  line-height:1.25;
-  white-space:pre-wrap; /* ✅ respeta saltos de línea del mensaje */
-}
-</style>
+    .small{font-size:11px;}
+  </style>
 </head>
 
 <body>
-<div class="ticket">
+  <div class="ticket">
 
-<!-- ✅ Empresa viene como Ve.Name -->
-<h1 id="empresa">APARKO</h1>
-<p><span class="etq">NIT:</span> <span id="nit"></span></p>
-<p id="direccion"></p>
-<p><span class="etq">HORARIO:</span> <span id="horario"></span></p>
-<p id="poliza"></p>
+    <h1 id="empresa">APARKO</h1>
+    <p><span class="etq">NIT:</span> <span id="nit"></span></p>
+    <p id="direccion"></p>
+    <p><span class="etq">HORARIO:</span> <span id="horario"></span></p>
+    <p id="polizaTop"></p>
 
-<div class="sep"></div>
+    <div class="sep"></div>
 
-<!-- ✅ Placa viene como EntradaPlaca -->
-<p><span class="etq">PLACA:</span> <span class="placa" id="placa"></span></p>
-<p><span class="etq">TARIFA:</span> <span id="tipo"></span></p>
+    <p><span class="etq">ENTRADA:</span> <span id="fecha"></span></p>
+    <p><span class="etq">TARIFA:</span> <span id="categoria"></span></p>
 
-<!-- ✅ Fecha de entrada viene como fecha -->
-<p><span class="etq">ENTRADA:</span> <span id="fentrada"></span></p>
+    <p class="placa-label">PLACA</p>
+    <div class="placa-grande" id="placa">-</div>
 
-<!-- En ticket de entrada estas suelen venir vacías -->
-<p style="display:none;"><span class="etq">SALIDA:</span> <span id="fsalida"></span></p>
-<p style="display:none;"><span class="etq">DURACIÓN:</span> <span id="duracion"></span></p>
+    <div class="codewrap">
+      <svg id="barcode"></svg>
+      <div id="qr-placa" class="qrPlaca" style="display:none;"></div>
+    </div>
 
-<div class="sep"></div>
+    <div id="qr-section" style="display:none;">
+      <div class="sep"></div>
+      <div class="codewrap">
+        <div id="qrcode" class="qrWeb"></div>
+      </div>
+    </div>
 
-<!-- En entrada NO usamos bloque de factura; lo ocultamos -->
-<div id="bloqueFactura" style="display:none;">
-  <div id="msgFactura" class="msgfact"></div>
-  <div id="trackBig" class="track-big"></div>
-  <div class="qrwrap">
-    <div id="qrcode" class="qr"></div>
+    <div class="sep"></div>
+
   </div>
-</div>
 
-<div id="bloqueSimple" style="display:none;">
-  <div id="trackSmall" class="track-small"></div>
-</div>
-
-<!-- Si no mandas total, se puede ocultar automático -->
-<div id="bloqueTotal">
-  <div class="total-etq">TOTAL A PAGAR</div>
-  <div class="total-val">$<span id="total"></span></div>
-</div>
-
-<!-- ✅ MENSAJE QUE QUIERES: Ve.FacMensaje -->
-<div id="msgSalida" class="msg-inf"></div>
-
-<div class="sep"></div>
-
-</div>
-
-<script>
-function qp(k){ return new URLSearchParams(location.search).get(k)||""; }
-
-function isTruthy(v){
-  if(v===undefined||v===null) return false;
-  const s=String(v).trim().toLowerCase();
-  return ["true","1","si","sí","yes","y"].includes(s);
-}
-
-function fmtCOP(n){
-  const v=Number(String(n).replace(/[^0-9.-]/g,""));
-  return isNaN(v)?String(n):v.toLocaleString("es-CO");
-}
-
-function setText(id,val){
-  const el=document.getElementById(id);
-  if(el) el.textContent=val||"";
-}
-
-function init(){
-  // ✅ AppSheet manda: Ve.Name
-  setText("empresa", qp("Ve.Name") || "APARKO");
-
-  // ✅ AppSheet manda: DatosNit, DatosDireccion, DatosHorario, DatosPoliza
-  setText("nit", qp("DatosNit"));
-  setText("direccion", qp("DatosDireccion"));
-  setText("horario", qp("DatosHorario"));
-  setText("poliza", qp("DatosPoliza"));
-
-  // ✅ AppSheet manda: EntradaPlaca, TipoPlaca, fecha
-  setText("placa", qp("EntradaPlaca"));
-  setText("tipo", qp("TipoPlaca"));
-  setText("fentrada", qp("fecha"));
-
-  // ✅ Mensaje inferior: Ve.FacMensaje
-  setText("msgSalida", qp("Ve.FacMensaje"));
-
-  // ✅ Si NO hay total en entrada, ocultamos el bloque
-  const totalRaw = qp("SalidaValor") || qp("total") || "";
-  const bloqueTotal = document.getElementById("bloqueTotal");
-  if(!totalRaw){
-    if(bloqueTotal) bloqueTotal.style.display = "none";
-  }else{
-    setText("total", fmtCOP(totalRaw));
-  }
-
-  // ✅ Si quieres usar Validaciones para mostrar/ocultar el QR o track en entrada:
-  // Ve.ValidaRecibo / Ve.ValidaQr (vienen como "TRUE/FALSE" o "true/false")
-  const validaQr = isTruthy(qp("Ve.ValidaQr"));
-  const validaRecibo = isTruthy(qp("Ve.ValidaRecibo"));
-
-  // Si quieres mostrar un QR con el link del usuario (Vs.LinkUser) cuando validaQr=TRUE:
-  const linkUser = (qp("Vs.LinkUser")||"").trim();
-
-  const bloqueFactura = document.getElementById("bloqueFactura");
-  const bloqueSimple  = document.getElementById("bloqueSimple");
-
-  if(validaQr && linkUser){
-    // mostramos un QR simple abajo (usamos bloqueFactura como contenedor)
-    bloqueSimple.style.display  = "none";
-    bloqueFactura.style.display = "block";
-
-    // mensaje arriba del QR (puedes cambiarlo)
-    setText("msgFactura", "Escanea para ver tu recibo / información");
-    setText("trackBig", " ");
-
-    // crear QR
-    const box=document.getElementById("qrcode");
-    if(box){
-      box.innerHTML="";
-      new QRCode(box,{
-        text: linkUser,
-        width:260,
-        height:260,
-        correctLevel:QRCode.CorrectLevel.M
+  <script>
+    function getParams() {
+      const params = {};
+      const q = location.search.startsWith("?") ? location.search.slice(1) : location.search;
+      q.split("&").forEach(p => {
+        if (!p) return;
+        const [k, v] = p.split("=");
+        params[decodeURIComponent(k || "")] =
+          decodeURIComponent((v || "").replace(/\+/g, " "));
       });
+      return params;
     }
-  }else{
-    // si no hay QR, ocultamos todo ese bloque
-    bloqueFactura.style.display = "none";
-    bloqueSimple.style.display  = "none";
-  }
 
-  setTimeout(()=>{
-    try{window.print();}catch(e){}
-    setTimeout(()=>{try{window.close();}catch(e){}},600);
-  },400);
-}
+    function hasValue(x) {
+      if (x === undefined || x === null) return false;
+      const v = String(x).trim().toLowerCase();
+      return v !== "" && v !== "null" && v !== "undefined" && v !== "na";
+    }
 
-if(document.readyState==="complete") init();
-else window.addEventListener("load",init);
-</script>
+    function textOrDefault(elId, v, def="") {
+      const el = document.getElementById(elId);
+      if (el) el.textContent = hasValue(v) ? v : def;
+    }
 
+    function isTruthy(v) {
+      if (v === undefined || v === null) return false;
+      const s = String(v).trim().toLowerCase();
+      return ["true","1","si","sí","yes","y"].includes(s);
+    }
+
+    /* BARCODE con líneas más delgadas */
+    function safeMakeBarcode(selector, value) {
+      const el = document.querySelector(selector);
+      if (!el) return;
+      try {
+        if (window.JsBarcode) {
+          JsBarcode(selector, value, {
+            format: "CODE128",
+            displayValue: true,
+            fontSize: 14,
+            height: 65,
+            width: 1.6,   // 👈 líneas más delgadas
+            margin: 0
+          });
+        } else {
+          el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
+        }
+      } catch (e) {
+        el.outerHTML = '<div class="small">' + (value || "-") + '</div>';
+      }
+    }
+
+    function safeMakeQR(containerId, text, size) {
+      const box = document.getElementById(containerId);
+      if (!box) return;
+      box.innerHTML = "";
+      try{
+        if (window.QRCode) {
+          new QRCode(box, {
+            text: text || "",
+            width: size,
+            height: size,
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        } else {
+          box.innerHTML = '<div class="small">' + (text || "") + '</div>';
+        }
+      } catch(e){
+        box.innerHTML = '<div class="small">' + (text || "") + '</div>';
+      }
+    }
+
+    function render() {
+      const p = getParams();
+
+      textOrDefault("empresa", p["Ve.Name"], "APARKO");
+      textOrDefault("nit", p.DatosNit, "");
+      textOrDefault("direccion", p.DatosDireccion, "");
+      textOrDefault("horario", p.DatosHorario, "");
+      textOrDefault("polizaTop", p.DatosPoliza, "");
+
+      textOrDefault("fecha", p.fecha, "");
+      textOrDefault("categoria", p.TipoPlaca, "");
+      textOrDefault("placa", p.EntradaPlaca, "-");
+
+      const placa = hasValue(p.EntradaPlaca) ? p.EntradaPlaca : "-";
+      const validaQr = isTruthy(p["Ve.ValidaQr"]);
+
+      const barcodeSvg = document.getElementById("barcode");
+      const qrPlacaBox = document.getElementById("qr-placa");
+
+      if (validaQr) {
+        barcodeSvg.style.display = "block";
+        qrPlacaBox.style.display = "none";
+        safeMakeBarcode("#barcode", placa);
+      } else {
+        barcodeSvg.style.display = "none";
+        qrPlacaBox.style.display = "flex";
+        safeMakeQR("qr-placa", placa, 170);
+      }
+
+      const qrSection = document.getElementById("qr-section");
+      const tieneLinkQR  = hasValue(p["Vs.LinkUser"]);
+      const validaRecibo = isTruthy(p["Ve.ValidaRecibo"]);
+
+      if (tieneLinkQR && validaRecibo) {
+        qrSection.style.display = "block";
+        safeMakeQR("qrcode", p["Vs.LinkUser"], 260);
+      } else {
+        qrSection.style.display = "none";
+      }
+
+      setTimeout(() => {
+        try { window.print(); } catch (e) {}
+        setTimeout(() => { try { window.close(); } catch (e) {} }, 650);
+      }, 420);
+    }
+
+    if (document.readyState === "complete") render();
+    else window.addEventListener("load", render);
+  </script>
 </body>
 </html>
